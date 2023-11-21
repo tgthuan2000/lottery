@@ -84,7 +84,7 @@ export default function ConfigPage() {
           {prize.value.map((_prize, index) => (
             <Card
               size="small"
-              title={_prize.name || `Prize ${index + 1}`}
+              title={<Typography.Title level={3}>#{index + 1}</Typography.Title>}
               key={_prize._id}
               extra={
                 <XIcon

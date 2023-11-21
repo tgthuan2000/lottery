@@ -2,7 +2,7 @@ import { Badge } from "antd";
 import dayjs from "dayjs";
 import { isNil } from "lodash";
 import { XCircleIcon } from "lucide-react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import { v4 as uuid } from "uuid";
 import { cn } from "../../util";
 
@@ -13,14 +13,14 @@ type TicketProps = {
 };
 
 const Ticket = {
-  randomInRange(num = 1000) {
-    return ~~(Math.random() * num);
+  randomInRange(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   },
 
-  useRandomSelected(selectedFinal: number) {
+  useRandomSelected(): [number | undefined, (max: number, min: number, final: number) => void] {
     const [selected, setSelected] = useState<number | undefined>(undefined);
 
-    useEffect(() => {
+    const random = useCallback((max: number, min: number, final: number) => {
       const recursive = (
         timeLoop: number = 10000,
         timeRecursive: number = 300,
@@ -36,12 +36,12 @@ const Ticket = {
         }
 
         if (timeLoop <= 0) {
-          setSelected(selectedFinal);
+          setSelected(final);
           return;
         }
 
         interval = setInterval(() => {
-          setSelected(Ticket.randomInRange());
+          setSelected(Ticket.randomInRange(max, min));
         }, timeLoop);
 
         timeout = setTimeout(() => {
@@ -52,9 +52,9 @@ const Ticket = {
       };
 
       recursive(5000, 200);
-    }, [selectedFinal]);
+    }, []);
 
-    return selected;
+    return [selected, random];
   },
 
   getNumber(
