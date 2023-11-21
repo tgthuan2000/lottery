@@ -2,7 +2,7 @@ import { Typography } from "antd";
 import { ImportIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "~/shared/components/button";
-import { useConfig } from "../../store/config";
+import { useConfig } from "../store/config";
 
 export default function DashboardPage() {
   const [slots, addSlot, removeSlot] = useConfig((state) => [
@@ -34,7 +34,7 @@ export default function DashboardPage() {
             </div>
           </div>
         ))}
-        <Button.Slot icon={<PlusIcon />} onClick={() => addSlot()}>
+        <Button.Slot type="dashed" icon={<PlusIcon />} onClick={() => addSlot()}>
           New Slot
         </Button.Slot>
         <Link to="import">
