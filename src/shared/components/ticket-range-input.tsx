@@ -17,7 +17,7 @@ export default function TicketRangeInput(props: Props) {
 
   return (
     <label className={cn("flex flex-col items-start gap-2", className)}>
-      <Typography>{label}</Typography>
+      <Typography.Title level={5}>{label}</Typography.Title>
       <Space.Compact>
         <InputNumber ref={fromRef} placeholder="From (Ex: 1)" className="w-32" />
 

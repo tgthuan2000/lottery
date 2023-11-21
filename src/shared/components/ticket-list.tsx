@@ -38,7 +38,11 @@ export default function TicketList<T>(props: Props<T>) {
               const _id = getItemKey(item);
               const label = getItemLabel(item);
 
-              return <Ticket.Ticket onDelete={() => onDeleteItem?.(_id)} key={_id} value={label} />;
+              return (
+                <Ticket.Ticket onDelete={() => onDeleteItem?.(_id)} key={_id}>
+                  {label}
+                </Ticket.Ticket>
+              );
             })}
           </div>
           {onDeleteAll && (

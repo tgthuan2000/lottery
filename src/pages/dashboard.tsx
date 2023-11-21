@@ -1,5 +1,5 @@
 import { Typography } from "antd";
-import { ImportIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { ImportIcon, PlusIcon, TrashIcon, UploadCloudIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "~/shared/components/button";
 import { useConfig } from "../store/config";
@@ -39,6 +39,9 @@ export default function DashboardPage() {
         </Button.Slot>
         <Link to="import">
           <Button.Slot icon={<ImportIcon />}>Import Slot</Button.Slot>
+        </Link>
+        <Link to="export">
+          <Button.Slot icon={<UploadCloudIcon />}>Export Slots</Button.Slot>
         </Link>
       </div>
     </div>

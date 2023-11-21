@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from "dayjs";
 import { isEmpty } from "lodash";
 import { v4 as uuid } from "uuid";
@@ -75,7 +76,7 @@ export type ConfigStore = {
   addSlot(slotName?: string): void;
   setSlot(
     slotId: string | undefined
-  ): (payload: Partial<Omit<ISlot, "_id" | "_createdAt">>) => void;
+  ): <T extends ISlot = ISlot>(field: keyof T, value: T[keyof T]) => void;
   getSlot(slotId: string | undefined): ISlot | undefined;
   removeSlot(slotId: string): void;
   generateTicket(slotId: string | undefined): (from: number, to: number) => void;
@@ -92,7 +93,7 @@ export type ConfigStore = {
   addPrize(slotId: string | undefined): (prizeName?: string) => void;
   setPrize(
     slotId: string | undefined
-  ): (prizeId: string, payload: Partial<Omit<IPrize, "_id" | "_createdAt">>) => void;
+  ): <T extends IPrize = IPrize>(prizeId: string, field: keyof T, value: T[keyof T]) => void;
   deletePrize(slotId: string | undefined): (prizeId: string) => void;
   deletePrizeTicket(slotId: string | undefined): (prizeId: string, ticketId: string) => void;
   deleteAllPrizeTicket(slotId: string | undefined): (prizeId: string) => void;
@@ -138,18 +139,14 @@ export const useConfig = create<ConfigStore>()(
           });
         },
 
-        setSlot(_id) {
-          return (payload) => {
-            if (!_id) return;
+        setSlot(slotId) {
+          return (field, value) => {
+            if (!slotId) return;
 
             setConfig((state) => {
-              const slot = state.slots[_id];
+              state.slots[slotId][field as keyof ISlot] = value as any;
 
-              if (!slot) {
-                return { slots: state.slots };
-              }
-
-              return { slots: { ...state.slots, [_id]: { ...slot, ...payload } } };
+              return { slots: state.slots };
             });
           };
         },
@@ -187,9 +184,7 @@ export const useConfig = create<ConfigStore>()(
 
               state.slots[slotId].tickets = Ticket.TicketsFormatter(tickets);
 
-              return {
-                slots: state.slots,
-              };
+              return { slots: state.slots };
             });
           };
         },
@@ -224,9 +219,7 @@ export const useConfig = create<ConfigStore>()(
 
               state.slots[slotId].tickets = {};
 
-              return {
-                slots: state.slots,
-              };
+              return { slots: state.slots };
             });
           };
         },
@@ -257,14 +250,11 @@ export const useConfig = create<ConfigStore>()(
         },
 
         setPrize(slotId) {
-          return (prizeId, payload) => {
+          return (prizeId, field, value) => {
             if (!slotId) return;
 
             setConfig((state) => {
-              state.slots[slotId].prizes[prizeId] = {
-                ...state.slots[slotId].prizes[prizeId],
-                ...payload,
-              };
+              state.slots[slotId].prizes[prizeId][field as keyof IPrize] = value as any;
 
               return { slots: state.slots };
             });

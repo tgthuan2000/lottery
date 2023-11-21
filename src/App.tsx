@@ -38,7 +38,14 @@ const routers: RouteObject[] = [
   {
     path: "lottery",
     element: <LotteryPage />,
-    children: [],
+  },
+  {
+    path: "import",
+    element: <></>,
+  },
+  {
+    path: "export",
+    element: <></>,
   },
   {
     path: "/404",

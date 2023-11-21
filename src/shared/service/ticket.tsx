@@ -8,7 +8,7 @@ import { cn } from "../../util";
 
 type TicketProps = {
   selected?: boolean;
-  value: ReactNode;
+  children: ReactNode;
   onDelete?: () => void;
 };
 
@@ -110,7 +110,7 @@ const Ticket = {
   },
 
   Ticket(props: TicketProps) {
-    const { selected, value, onDelete } = props;
+    const { selected, children, onDelete } = props;
     const canDelete = Boolean(onDelete);
 
     const item = (
@@ -121,7 +121,7 @@ const Ticket = {
           { "text-white border-transparent bg-red-500": selected }
         )}
       >
-        {value}
+        {children}
       </div>
     );
 

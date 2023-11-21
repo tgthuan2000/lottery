@@ -1,4 +1,5 @@
 import { Card, Input, Tooltip, Typography } from "antd";
+import { debounce } from "lodash";
 import { ArrowLeftIcon, ArrowRightIcon, XIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "~/shared/components/button";
@@ -60,8 +61,11 @@ export default function ConfigPage() {
       </div>
 
       <label className="space-y-1">
-        <Typography>Slot Name</Typography>
-        <Input value={slot.value?.name} onChange={(e) => slot.set({ name: e.target.value })} />
+        <Typography.Title level={5}>Slot Name</Typography.Title>
+        <Input
+          defaultValue={slot.value?.name}
+          onChange={debounce((e) => slot.set("name", e.target.value), 1000)}
+        />
       </label>
 
       <TicketRangeInput onSubmit={slot.generateTicket} />
@@ -74,42 +78,55 @@ export default function ConfigPage() {
         onDeleteAll={ticket.deleteAll}
       />
 
-      {prize.value.map((_prize, index) => (
-        <Card
-          size="small"
-          title={_prize.name || `Prize ${index + 1}`}
-          key={_prize._id}
-          extra={
-            <XIcon
-              className="text-gray-700 h-5 w-5 mt-1 cursor-pointer hover:opacity-50"
-              onClick={() => {
-                prize.delete(_prize._id);
-              }}
-            />
-          }
-        >
-          <div className="flex flex-col gap-5">
-            <label>
-              <Typography>Name</Typography>
-              <Input
-                value={_prize.name}
-                onChange={(e) => prize.set(_prize._id, { name: e.target.value })}
-              />
-            </label>
+      <div>
+        <Typography.Title level={5}>Prize</Typography.Title>
+        <div className="flex flex-col gap-3">
+          {prize.value.map((_prize, index) => (
+            <Card
+              size="small"
+              title={_prize.name || `Prize ${index + 1}`}
+              key={_prize._id}
+              extra={
+                <XIcon
+                  className="text-gray-700 h-5 w-5 mt-1 cursor-pointer hover:opacity-50"
+                  onClick={() => prize.delete(_prize._id)}
+                />
+              }
+            >
+              <div className="flex flex-col gap-5">
+                <label>
+                  <Typography>Name</Typography>
+                  <Input
+                    defaultValue={_prize.name}
+                    onChange={debounce((e) => prize.set(_prize._id, "name", e.target.value), 1000)}
+                  />
+                </label>
 
-            <TicketRangeInput onSubmit={(from, to) => prize.generateTicket(_prize._id, from, to)} />
+                <label>
+                  <Typography>Value</Typography>
+                  <Input
+                    value={_prize.value}
+                    onChange={(e) => prize.set(_prize._id, "value", e.target.value)}
+                  />
+                </label>
 
-            <TicketList
-              value={utils.convertToList(_prize.tickets)}
-              getItemKey={(item) => item._id}
-              getItemLabel={(item) => item.label}
-              onDeleteItem={(ticketId) => prize.deleteTicket(_prize._id, ticketId)}
-              onDeleteAll={() => prize.deleteAllTicket(_prize._id)}
-            />
-          </div>
-        </Card>
-      ))}
+                <TicketRangeInput
+                  label="Ticket"
+                  onSubmit={(from, to) => prize.generateTicket(_prize._id, from, to)}
+                />
 
+                <TicketList
+                  value={utils.convertToList(_prize.tickets)}
+                  getItemKey={(item) => item._id}
+                  getItemLabel={(item) => item.label}
+                  onDeleteItem={(ticketId) => prize.deleteTicket(_prize._id, ticketId)}
+                  onDeleteAll={() => prize.deleteAllTicket(_prize._id)}
+                />
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
       <Button.Slot type="dashed" onClick={() => prize.create()} block className="mb-10">
         + Add Prize
       </Button.Slot>
