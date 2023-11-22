@@ -14,7 +14,13 @@ export default function DashboardPage() {
   return (
     <div className="flex w-full h-screen justify-center items-center">
       <div className="flex items-center flex-col gap-5">
-        <Typography.Title>Lottery</Typography.Title>
+        <Typography.Title className="relative">
+          <img
+            src="/logo.png"
+            className="absolute right-[calc(100%+12px)] object-cover w-12 h-12 aspect-square"
+          />{" "}
+          Lottery
+        </Typography.Title>
         {slots.map((slot) => (
           <div key={slot._id} className="group relative">
             <Link
