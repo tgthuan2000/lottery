@@ -5,6 +5,9 @@ interface IBase {
 
 interface ISlot extends IBase {
   name: string;
+  maxLength?: number;
+  from?: number;
+  to?: number;
   prizes: Record<string, IPrize>;
   tickets: Record<string, ITicket>;
 }
@@ -18,6 +21,7 @@ interface IPrize extends IBase {
 }
 
 interface IWinningTicket extends IBase {
+  placeholder?: number | string;
   ticket?: ITicket;
 }
 

@@ -1,4 +1,5 @@
 export enum SEARCH_PARAMS {
   SLOT = 'slot',
-  LOTTERY = 'lottery',
+  TICKET = 'ticket',
+  PRIZE = 'prize',
 }

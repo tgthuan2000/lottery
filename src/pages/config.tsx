@@ -30,6 +30,7 @@ export default function ConfigPage() {
         value: state.convertToList(slotValue?.prizes),
         create: state.addPrize(slotParam),
         set: state.setPrize(slotParam),
+        setSlot: state.setPrizeSlot(slotParam),
         delete: state.deletePrize(slotParam),
         deleteTicket: state.deletePrizeTicket(slotParam),
         deleteAllTicket: state.deleteAllPrizeTicket(slotParam),
@@ -43,7 +44,7 @@ export default function ConfigPage() {
   });
 
   return (
-    <div className="flex flex-col gap-3 max-w-5xl mx-auto">
+    <div className="flex flex-col gap-3 max-w-5xl mx-auto my-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Tooltip title="Back">
@@ -60,15 +61,22 @@ export default function ConfigPage() {
         </Link>
       </div>
 
-      <label className="space-y-1">
-        <Typography.Title level={5}>Slot Name</Typography.Title>
-        <Input
-          defaultValue={slot.value?.name}
-          onChange={debounce((e) => slot.set("name", e.target.value), 1000)}
-        />
-      </label>
+      <div className="flex flex-wrap items-center gap-5">
+        <label>
+          <Typography>Slot Name</Typography>
+          <Input
+            defaultValue={slot.value?.name}
+            onChange={debounce((e) => slot.set("name", e.target.value), 1000)}
+            className="w-fit"
+          />
+        </label>
 
-      <TicketRangeInput onSubmit={slot.generateTicket} />
+        <TicketRangeInput
+          from={slot.value?.from}
+          to={slot.value?.to}
+          onSubmit={slot.generateTicket}
+        />
+      </div>
 
       <TicketList
         value={utils.convertToList(slot.value?.tickets)}
@@ -78,13 +86,17 @@ export default function ConfigPage() {
         onDeleteAll={ticket.deleteAll}
       />
 
-      <div>
-        <Typography.Title level={5}>Prize</Typography.Title>
+      <div className="mt-5">
+        <Typography.Title level={4}>Prize</Typography.Title>
         <div className="flex flex-col gap-3">
           {prize.value.map((_prize, index) => (
             <Card
               size="small"
-              title={<Typography.Title level={3}>#{index + 1}</Typography.Title>}
+              title={
+                <Typography.Title level={3} className="!mb-0">
+                  #{index + 1}
+                </Typography.Title>
+              }
               key={_prize._id}
               extra={
                 <XIcon
@@ -94,26 +106,47 @@ export default function ConfigPage() {
               }
             >
               <div className="flex flex-col gap-5">
-                <label>
-                  <Typography>Name</Typography>
-                  <Input
-                    defaultValue={_prize.name}
-                    onChange={debounce((e) => prize.set(_prize._id, "name", e.target.value), 1000)}
-                  />
-                </label>
+                <div className="flex items-center gap-5 flex-wrap">
+                  <label>
+                    <Typography>Name</Typography>
+                    <Input
+                      defaultValue={_prize.name}
+                      onChange={debounce(
+                        (e) => prize.set(_prize._id, "name", e.target.value),
+                        1000
+                      )}
+                      className="w-fit"
+                    />
+                  </label>
 
-                <label>
-                  <Typography>Value</Typography>
-                  <Input
-                    value={_prize.value}
-                    onChange={(e) => prize.set(_prize._id, "value", e.target.value)}
-                  />
-                </label>
+                  <label>
+                    <Typography>Value</Typography>
+                    <Input
+                      value={_prize.value}
+                      onChange={(e) => prize.set(_prize._id, "value", e.target.value)}
+                      className="w-fit"
+                    />
+                  </label>
 
-                <TicketRangeInput
-                  label="Ticket"
-                  onSubmit={(from, to) => prize.generateTicket(_prize._id, from, to)}
-                />
+                  <label>
+                    <Typography>Slot</Typography>
+                    <Input
+                      defaultValue={utils.convertToList(_prize.winningTickets).length}
+                      className="w-40"
+                      onChange={debounce(
+                        (e) => prize.setSlot(_prize._id, Number(e.target.value)),
+                        1000
+                      )}
+                    />
+                  </label>
+
+                  <TicketRangeInput
+                    label="Ticket"
+                    min={slot.value?.from}
+                    max={slot.value?.to}
+                    onSubmit={(from, to) => prize.generateTicket(_prize._id, from, to)}
+                  />
+                </div>
 
                 <TicketList
                   value={utils.convertToList(_prize.tickets)}
@@ -127,7 +160,7 @@ export default function ConfigPage() {
           ))}
         </div>
       </div>
-      <Button.Slot type="dashed" onClick={() => prize.create()} block className="mb-10">
+      <Button.Slot type="dashed" onClick={() => prize.create()} block>
         + Add Prize
       </Button.Slot>
     </div>

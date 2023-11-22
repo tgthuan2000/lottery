@@ -2,7 +2,7 @@ import { Badge } from "antd";
 import dayjs from "dayjs";
 import { isNil } from "lodash";
 import { XCircleIcon } from "lucide-react";
-import { ReactNode, useCallback, useState } from "react";
+import { ReactNode } from "react";
 import { v4 as uuid } from "uuid";
 import { cn } from "../../util";
 
@@ -15,46 +15,6 @@ type TicketProps = {
 const Ticket = {
   randomInRange(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-  },
-
-  useRandomSelected(): [number | undefined, (max: number, min: number, final: number) => void] {
-    const [selected, setSelected] = useState<number | undefined>(undefined);
-
-    const random = useCallback((max: number, min: number, final: number) => {
-      const recursive = (
-        timeLoop: number = 10000,
-        timeRecursive: number = 300,
-        interval: number | null = null,
-        timeout: number | null = null
-      ) => {
-        if (interval) {
-          clearInterval(interval);
-        }
-
-        if (timeout) {
-          clearTimeout(timeout);
-        }
-
-        if (timeLoop <= 0) {
-          setSelected(final);
-          return;
-        }
-
-        interval = setInterval(() => {
-          setSelected(Ticket.randomInRange(max, min));
-        }, timeLoop);
-
-        timeout = setTimeout(() => {
-          timeLoop -= 100;
-
-          recursive(timeLoop, timeRecursive, interval, timeout);
-        }, timeRecursive);
-      };
-
-      recursive(5000, 200);
-    }, []);
-
-    return [selected, random];
   },
 
   getNumber(
@@ -77,7 +37,7 @@ const Ticket = {
     return number;
   },
 
-  generateTickets(from: number, to: number) {
+  generateTickets(from: number, to: number, maxLength?: number) {
     const length = to - from;
 
     const numbers = Array.from({ length }).reduce<number[]>(
@@ -88,10 +48,7 @@ const Ticket = {
       [from]
     );
 
-    // const maxLength = numbers.at(-1)!.toString().length;
-    const maxLength = 4;
-
-    return numbers.map((num) => Ticket.getNumber(num, maxLength, "0"));
+    return numbers.map((num) => Ticket.getNumber(num, maxLength ?? to.toString().length, "0"));
   },
 
   TicketsFormatter(tickets: string[]) {

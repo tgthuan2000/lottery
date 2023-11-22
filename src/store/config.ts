@@ -32,6 +32,7 @@ const generateDefaultSlot = (options: { prizeName?: string; slotName?: string } 
   const slotId = uuid();
   const ticketId = uuid();
   const prizeId = uuid();
+  const winnerTicketId = uuid();
 
   const _createdAt = dayjs().toDate();
 
@@ -52,7 +53,13 @@ const generateDefaultSlot = (options: { prizeName?: string; slotName?: string } 
       name: prizeName ?? defaultValue.prizeName,
       value: 1000,
       tickets: defaultTicket,
-      winningTickets: {},
+      winningTickets: {
+        [winnerTicketId]: {
+          _id: winnerTicketId,
+          _createdAt,
+          ticket: undefined,
+        },
+      },
       asset: undefined,
     },
   };
@@ -94,6 +101,7 @@ export type ConfigStore = {
   setPrize(
     slotId: string | undefined
   ): <T extends IPrize = IPrize>(prizeId: string, field: keyof T, value: T[keyof T]) => void;
+  setPrizeSlot(slotId: string | undefined): (prizeId: string, slotNum: number) => void;
   deletePrize(slotId: string | undefined): (prizeId: string) => void;
   deletePrizeTicket(slotId: string | undefined): (prizeId: string, ticketId: string) => void;
   deleteAllPrizeTicket(slotId: string | undefined): (prizeId: string) => void;
@@ -144,7 +152,7 @@ export const useConfig = create<ConfigStore>()(
             if (!slotId) return;
 
             setConfig((state) => {
-              state.slots[slotId][field as keyof ISlot] = value as any;
+              state.slots[slotId][field as keyof ISlot] = value as never;
 
               return { slots: state.slots };
             });
@@ -183,6 +191,9 @@ export const useConfig = create<ConfigStore>()(
               const tickets = Ticket.generateTickets(from, to);
 
               state.slots[slotId].tickets = Ticket.TicketsFormatter(tickets);
+              state.slots[slotId].maxLength = to.toString().length;
+              state.slots[slotId].from = from;
+              state.slots[slotId].to = to;
 
               return { slots: state.slots };
             });
@@ -254,7 +265,31 @@ export const useConfig = create<ConfigStore>()(
             if (!slotId) return;
 
             setConfig((state) => {
-              state.slots[slotId].prizes[prizeId][field as keyof IPrize] = value as any;
+              state.slots[slotId].prizes[prizeId][field as keyof IPrize] = value as never;
+
+              return { slots: state.slots };
+            });
+          };
+        },
+
+        setPrizeSlot(slotId) {
+          return (prizeId, slotNum) => {
+            if (!slotId) return;
+
+            setConfig((state) => {
+              state.slots[slotId].prizes[prizeId].winningTickets = Array.from({
+                length: slotNum,
+              }).reduce<Record<string, IWinningTicket>>((result) => {
+                const _id = uuid();
+
+                result[_id] = {
+                  _id,
+                  _createdAt: dayjs().toDate(),
+                  ticket: undefined,
+                };
+
+                return result;
+              }, {});
 
               return { slots: state.slots };
             });
@@ -318,7 +353,7 @@ export const useConfig = create<ConfigStore>()(
                 return { slots: state.slots };
               }
 
-              const tickets = Ticket.generateTickets(from, to);
+              const tickets = Ticket.generateTickets(from, to, state.slots[slotId].maxLength);
 
               state.slots[slotId].prizes[prizeId].tickets = Ticket.TicketsFormatter(tickets);
 
