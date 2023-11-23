@@ -1,10 +1,11 @@
 import { Button as AntButton, Descriptions, Modal, Typography } from "antd";
 import { ArrowLeftIcon } from "lucide-react";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "~/shared/components/button";
 import { SEARCH_PARAMS } from "~/shared/constants/search-param";
 import useSearchParam from "~/shared/hooks/use-search-param";
+import Ticket from "~/shared/service/ticket";
 import { useConfig } from "~/store/config";
 
 export default function LotteryPage() {
@@ -99,14 +100,13 @@ const LotteryModal = () => {
   const [, setPrize, prizeParam] = useSearchParam(SEARCH_PARAMS.PRIZE);
   const [, , orderParam] = useSearchParam(SEARCH_PARAMS.ORDER);
 
-  const [state, setState] = useState<"pending" | "started" | "stopped">("pending");
-  const [value, setValue] = useState("00000");
-  const randomValueRef = useRef<ITicket | null>(null);
-
-  const { history, ticket } = useConfig((state) => {
-    // const slot = state.getSlot(slotParam);
+  const { slot, history, ticket } = useConfig((state) => {
+    const slot = state.getSlot(slotParam);
 
     return {
+      slot: {
+        value: slot,
+      },
       history: {
         set: state.setHistory(slotParam, historyParam, prizeParam, Number(orderParam)),
       },
@@ -116,8 +116,17 @@ const LotteryModal = () => {
     };
   });
 
+  const defaultValue = useMemo(
+    () => Ticket.getNumber("0", slot.value?.maxLength, "0"),
+    [slot.value?.maxLength]
+  );
+
+  const [state, setState] = useState<"pending" | "started" | "stopped">("pending");
+  const [value, setValue] = useState<string | null>(defaultValue);
+  const randomValueRef = useRef<ITicket | null>(null);
+
   const resetValue = () => {
-    setValue("00000");
+    setValue(defaultValue);
   };
 
   const handleRun = () => {
