@@ -19,6 +19,7 @@ const createDefaultSlot = (): ISlot => {
     name: "",
     prizes: {},
     tickets: {},
+    history: {},
   };
 };
 
@@ -32,8 +33,6 @@ const generateDefaultSlot = (options: { prizeName?: string; slotName?: string } 
   const slotId = uuid();
   const ticketId = uuid();
   const prizeId = uuid();
-  const winnerTicketId = uuid();
-
   const _createdAt = dayjs().toDate();
 
   const defaultTicket = {
@@ -53,13 +52,7 @@ const generateDefaultSlot = (options: { prizeName?: string; slotName?: string } 
       name: prizeName ?? defaultValue.prizeName,
       value: 1000,
       tickets: defaultTicket,
-      winningTickets: {
-        [winnerTicketId]: {
-          _id: winnerTicketId,
-          _createdAt,
-          ticket: undefined,
-        },
-      },
+      slot: 1,
       asset: undefined,
     },
   };
@@ -70,6 +63,7 @@ const generateDefaultSlot = (options: { prizeName?: string; slotName?: string } 
     name: slotName ?? defaultValue.slotName,
     tickets: defaultTicket,
     prizes: defaultPrize,
+    history: {},
   };
 
   return { ...createDefaultSlot(), ...defaultSlot };
@@ -87,6 +81,8 @@ export type ConfigStore = {
   getSlot(slotId: string | undefined): ISlot | undefined;
   removeSlot(slotId: string): void;
   generateTicket(slotId: string | undefined): (from: number, to: number) => void;
+  createHistoryGame(slotId: string | undefined): () => string | null;
+  deleteSlotHistory(slotId: string | undefined): (historyId: string) => void;
 
   /**
    * TICKET
@@ -200,6 +196,48 @@ export const useConfig = create<ConfigStore>()(
           };
         },
 
+        createHistoryGame(slotId) {
+          return () => {
+            if (!slotId) {
+              return null;
+            }
+
+            const historyId = uuid();
+
+            setConfig((state) => {
+              state.slots[slotId].history[historyId] = {
+                _id: historyId,
+                _createdAt: dayjs().toDate(),
+                name: undefined,
+                prizes: Object.keys(state.slots[slotId].prizes).reduce<IHistory["prizes"]>(
+                  (result, prizeId) => {
+                    result[prizeId] = {};
+
+                    return result;
+                  },
+                  {}
+                ),
+              };
+
+              return { slots: state.slots };
+            });
+
+            return historyId;
+          };
+        },
+
+        deleteSlotHistory(slotId) {
+          return (historyId) => {
+            if (!slotId) return;
+
+            setConfig((state) => {
+              delete state.slots[slotId].history[historyId];
+
+              return { slots: state.slots };
+            });
+          };
+        },
+
         /**
          * TICKET
          */
@@ -251,8 +289,8 @@ export const useConfig = create<ConfigStore>()(
                 name: prizeName,
                 value: prizeName,
                 tickets: {},
-                winningTickets: {},
                 asset: undefined,
+                slot: 1,
               };
 
               return { slots: state.slots };
@@ -277,19 +315,7 @@ export const useConfig = create<ConfigStore>()(
             if (!slotId) return;
 
             setConfig((state) => {
-              state.slots[slotId].prizes[prizeId].winningTickets = Array.from({
-                length: slotNum,
-              }).reduce<Record<string, IWinningTicket>>((result) => {
-                const _id = uuid();
-
-                result[_id] = {
-                  _id,
-                  _createdAt: dayjs().toDate(),
-                  ticket: undefined,
-                };
-
-                return result;
-              }, {});
+              state.slots[slotId].prizes[prizeId].slot = slotNum;
 
               return { slots: state.slots };
             });

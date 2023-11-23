@@ -1,7 +1,10 @@
-import { Card, Input, Tooltip, Typography } from "antd";
+import { Card, Dropdown, Input, Tooltip, Typography } from "antd";
+import { MenuProps } from "antd/lib";
+import dayjs from "dayjs";
 import { debounce } from "lodash";
 import { ArrowLeftIcon, ArrowRightIcon, XIcon } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "~/shared/components/button";
 import TicketList from "~/shared/components/ticket-list";
 import TicketRangeInput from "~/shared/components/ticket-range-input";
@@ -13,7 +16,7 @@ export default function ConfigPage() {
   const navigate = useNavigate();
   const [slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
 
-  const { slot, ticket, prize, utils } = useConfig((state) => {
+  const { slot, ticket, prize, history, utils } = useConfig((state) => {
     const slotValue = state.getSlot(slotParam);
 
     return {
@@ -21,6 +24,7 @@ export default function ConfigPage() {
         value: slotValue,
         set: state.setSlot(slotParam),
         generateTicket: state.generateTicket(slotParam),
+        createHistory: state.createHistoryGame(slotParam),
       },
       ticket: {
         delete: state.deleteTicket(slotParam),
@@ -37,11 +41,47 @@ export default function ConfigPage() {
         addTicket: state.addPrizeTicket(slotParam),
         generateTicket: state.generatePrizeTicket(slotParam),
       },
+      history: {
+        value: state.convertToList(slotValue?.history),
+        delete: state.deleteSlotHistory(slotParam),
+      },
       utils: {
         convertToList: state.convertToList,
       },
     };
   });
+
+  const lottery = (historyId?: string) => {
+    navigate({
+      pathname: "/lottery",
+      search: `${SEARCH_PARAMS.SLOT}=${slotParam}&${SEARCH_PARAMS.HISTORY}=${
+        historyId ?? slot.createHistory()
+      }`,
+    });
+  };
+
+  const items = useMemo<MenuProps["items"]>(() => {
+    return history.value.map((_history) => {
+      return {
+        key: _history._id,
+        label: (
+          <div className="relative group">
+            {_history.name ?? _history._id.slice(-4)} -{" "}
+            {dayjs(_history._createdAt).format("HH:mm DD/MM/YY")}
+            <Button.Icon
+              danger
+              onClick={(e) => {
+                e.stopPropagation();
+                history.delete(_history._id);
+              }}
+              className="absolute left-[calc(100%+20px)] opacity-0 group-hover:opacity-100 top-1/2 -translate-y-1/2"
+              icon={<XIcon />}
+            />
+          </div>
+        ),
+      };
+    });
+  }, [history]);
 
   return (
     <div className="flex flex-col gap-3 max-w-5xl mx-auto my-10">
@@ -53,12 +93,20 @@ export default function ConfigPage() {
           <Typography.Title>{slot.value?.name || "Slot Name"}</Typography.Title>
         </div>
 
-        <Link to={{ pathname: "/lottery", search: `slot=${slotParam}` }}>
-          <Button.Slot type="primary" htmlType="button">
-            Start
-            <ArrowRightIcon className="ml-2" />
-          </Button.Slot>
-        </Link>
+        <div>
+          <Dropdown.Button
+            htmlType="button"
+            size="large"
+            type="primary"
+            menu={{ items, onClick: (value) => lottery(value.key) }}
+            onClick={() => lottery()}
+          >
+            <div className="flex items-center">
+              NEW GAME
+              <ArrowRightIcon className="ml-2" />
+            </div>
+          </Dropdown.Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-5">
@@ -131,7 +179,7 @@ export default function ConfigPage() {
                   <label>
                     <Typography>Slot</Typography>
                     <Input
-                      defaultValue={utils.convertToList(_prize.winningTickets).length}
+                      defaultValue={_prize.slot}
                       className="w-40"
                       onChange={debounce(
                         (e) => prize.setSlot(_prize._id, Number(e.target.value)),

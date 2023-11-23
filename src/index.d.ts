@@ -10,6 +10,7 @@ interface ISlot extends IBase {
   to?: number;
   prizes: Record<string, IPrize>;
   tickets: Record<string, ITicket>;
+  history: Record<string, IHistory>;
 }
 
 interface IPrize extends IBase {
@@ -17,16 +18,16 @@ interface IPrize extends IBase {
   value: number | string;
   asset?: string;
   tickets: Record<string, ITicket>;
-  winningTickets: Record<string, IWinningTicket>;
-}
-
-interface IWinningTicket extends IBase {
-  placeholder?: number | string;
-  ticket?: ITicket;
+  slot: number;
 }
 
 interface ITicket extends IBase {
   label: number | string;
   value: number | string;
   owner?: string;
+}
+
+interface IHistory extends IBase {
+  name?: string;
+  prizes: Record<string, Record<number, ITicket>>;
 }

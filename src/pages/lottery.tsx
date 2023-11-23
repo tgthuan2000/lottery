@@ -1,14 +1,19 @@
-import { Button, Descriptions, Modal, Typography } from "antd";
+import { Button as AntButton, Descriptions, Modal, Typography } from "antd";
+import { ArrowLeftIcon } from "lucide-react";
 import { Fragment } from "react";
+import { useNavigate } from "react-router-dom";
+import Button from "~/shared/components/button";
 import { SEARCH_PARAMS } from "~/shared/constants/search-param";
 import useSearchParam from "~/shared/hooks/use-search-param";
 import { useConfig } from "~/store/config";
 
 export default function LotteryPage() {
+  const navigate = useNavigate();
   const [slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
-  const [, setTicket] = useSearchParam(SEARCH_PARAMS.TICKET);
+  const [historyParam] = useSearchParam(SEARCH_PARAMS.HISTORY);
+  const [, setPrize] = useSearchParam(SEARCH_PARAMS.PRIZE);
 
-  const { slot, prize, utils } = useConfig((state) => {
+  const { slot, prize, history } = useConfig((state) => {
     const slotValue = state.getSlot(slotParam);
 
     return {
@@ -18,14 +23,19 @@ export default function LotteryPage() {
       prize: {
         value: state.convertToList(slotValue?.prizes),
       },
-      utils: {
-        convertToList: state.convertToList,
+      history: {
+        value: slotValue?.history[historyParam ?? ""],
       },
     };
   });
 
   return (
     <>
+      <Button.Icon
+        icon={<ArrowLeftIcon />}
+        className="fixed top-2 left-2"
+        onClick={() => navigate(-1)}
+      />
       <div className="flex flex-col gap-5 h-screen overflow-hidden justify-center items-center">
         <Typography.Title level={1}>{slot.value?.name}</Typography.Title>
         <Descriptions bordered layout="horizontal" className="min-w-[500px]">
@@ -45,30 +55,27 @@ export default function LotteryPage() {
               }
             >
               <div className="flex gap-5 justify-center items-center">
-                {utils.convertToList(_prize.winningTickets).map((_ticket) => (
-                  <Fragment key={_ticket._id}>
-                    {_ticket.ticket ? (
-                      <Typography.Title className="!my-0" level={4}>
-                        {_ticket.ticket.label}
-                      </Typography.Title>
-                    ) : (
-                      <Button
-                        key={_ticket._id}
-                        htmlType="button"
-                        onClick={() => {
-                          setTicket((searchParam) => {
-                            searchParam.set(SEARCH_PARAMS.PRIZE, _prize._id);
+                {Array.from({ length: _prize.slot }).map((_, order) => {
+                  const _ticket = history.value?.prizes[_prize._id][order];
 
-                            return _ticket._id;
-                          });
-                        }}
-                        size="large"
-                      >
-                        TICKET
-                      </Button>
-                    )}
-                  </Fragment>
-                ))}
+                  return (
+                    <Fragment key={order}>
+                      {_ticket ? (
+                        <Typography.Title className="!my-0" level={4}>
+                          {_ticket.label}
+                        </Typography.Title>
+                      ) : (
+                        <AntButton
+                          htmlType="button"
+                          onClick={() => setPrize(_prize._id)}
+                          size="large"
+                        >
+                          TICKET
+                        </AntButton>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </div>
             </Descriptions.Item>
           ))}
@@ -82,22 +89,18 @@ export default function LotteryPage() {
 
 const LotteryModal = () => {
   const [, , _slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
-  const [, setTicket, _ticket] = useSearchParam(SEARCH_PARAMS.TICKET);
-  const [, , _prize] = useSearchParam(SEARCH_PARAMS.PRIZE);
+  const [, , _historyParam] = useSearchParam(SEARCH_PARAMS.HISTORY);
+  const [, setPrize, _prize] = useSearchParam(SEARCH_PARAMS.PRIZE);
 
   const handleRun = () => {};
 
   const handleClose = () => {
-    setTicket((searchParam) => {
-      searchParam.delete(SEARCH_PARAMS.PRIZE);
-
-      return undefined;
-    });
+    setPrize(undefined);
   };
 
   return (
     <Modal
-      open={Boolean(_slotParam && _ticket && _prize)}
+      open={Boolean(_slotParam && _historyParam && _prize)}
       closeIcon={false}
       closable={false}
       centered
@@ -108,12 +111,12 @@ const LotteryModal = () => {
         <Typography className="text-[200px] font-normal">{~~(Math.random() * 10000)}</Typography>
 
         <div className="flex gap-3 absolute bottom-3">
-          <Button htmlType="button" size="large" onClick={handleClose}>
+          <AntButton htmlType="button" size="large" onClick={handleClose}>
             CLOSE
-          </Button>
-          <Button htmlType="button" size="large" onClick={handleRun}>
-            START GAME
-          </Button>
+          </AntButton>
+          <AntButton htmlType="button" size="large" onClick={handleRun}>
+            START
+          </AntButton>
         </div>
       </div>
     </Modal>

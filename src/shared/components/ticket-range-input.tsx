@@ -26,6 +26,7 @@ export default function TicketRangeInput(props: Props) {
         <InputNumber
           ref={fromRef}
           min={min}
+          max={max}
           defaultValue={min ?? from}
           placeholder="From (Ex: 1)"
           className="w-32"
@@ -33,6 +34,7 @@ export default function TicketRangeInput(props: Props) {
 
         <InputNumber
           ref={toRef}
+          min={min}
           max={max}
           defaultValue={max ?? to}
           placeholder="To (Ex: 1000)"
