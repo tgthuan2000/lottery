@@ -10,6 +10,7 @@ interface ISlot extends IBase {
   to?: number;
   prizes: Record<string, IPrize>;
   tickets: Record<string, ITicket>;
+  minimizeTicket?: boolean;
   history: Record<string, IHistory>;
 }
 

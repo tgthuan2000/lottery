@@ -154,7 +154,9 @@ const LotteryModal = () => {
       destroyOnClose
     >
       <div className="h-[500px] flex items-center flex-col relative justify-center">
-        <Typography className="text-[200px] font-normal">{value}</Typography>
+        <Typography className="text-[200px] font-normal select-none pointer-events-none">
+          {value}
+        </Typography>
 
         <div className="flex flex-col gap-3 absolute bottom-3">
           {state === "pending" && (

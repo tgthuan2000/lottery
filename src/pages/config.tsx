@@ -135,6 +135,8 @@ export default function ConfigPage() {
         getItemLabel={(item) => item.label}
         onDeleteItem={ticket.delete}
         onDeleteAll={ticket.deleteAll}
+        minimized={slot.value?.minimizeTicket}
+        onScale={(minimized) => slot.set("minimizeTicket", minimized)}
       />
 
       <div className="mt-5">
