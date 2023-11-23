@@ -66,7 +66,7 @@ export default function ConfigPage() {
         key: _history._id,
         label: (
           <div className="relative group">
-            {_history.name ?? _history._id.slice(-4)} -{" "}
+            {_history.name ?? _history._id.slice(0, 4)} -{" "}
             {dayjs(_history._createdAt).format("HH:mm DD/MM/YY")}
             <Button.Icon
               danger

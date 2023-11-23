@@ -13,10 +13,6 @@ type TicketProps = {
 };
 
 const Ticket = {
-  randomInRange(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  },
-
   getNumber(
     number: string | number | null | undefined,
     maxLength: number = 4,

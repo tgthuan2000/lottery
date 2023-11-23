@@ -3,4 +3,5 @@ export enum SEARCH_PARAMS {
   TICKET = 'ticket',
   PRIZE = 'prize',
   HISTORY = 'history',
+  ORDER = 'order',
 }

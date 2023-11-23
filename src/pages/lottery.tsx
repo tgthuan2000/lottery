@@ -1,6 +1,6 @@
 import { Button as AntButton, Descriptions, Modal, Typography } from "antd";
 import { ArrowLeftIcon } from "lucide-react";
-import { Fragment } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "~/shared/components/button";
 import { SEARCH_PARAMS } from "~/shared/constants/search-param";
@@ -67,7 +67,13 @@ export default function LotteryPage() {
                       ) : (
                         <AntButton
                           htmlType="button"
-                          onClick={() => setPrize(_prize._id)}
+                          onClick={() =>
+                            setPrize((searchParam) => {
+                              searchParam.set(SEARCH_PARAMS.ORDER, order.toString());
+
+                              return _prize._id;
+                            })
+                          }
                           size="large"
                         >
                           TICKET
@@ -88,35 +94,112 @@ export default function LotteryPage() {
 }
 
 const LotteryModal = () => {
-  const [, , _slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
-  const [, , _historyParam] = useSearchParam(SEARCH_PARAMS.HISTORY);
-  const [, setPrize, _prize] = useSearchParam(SEARCH_PARAMS.PRIZE);
+  const [, , slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
+  const [, , historyParam] = useSearchParam(SEARCH_PARAMS.HISTORY);
+  const [, setPrize, prizeParam] = useSearchParam(SEARCH_PARAMS.PRIZE);
+  const [, , orderParam] = useSearchParam(SEARCH_PARAMS.ORDER);
 
-  const handleRun = () => {};
+  const [state, setState] = useState<"pending" | "started" | "stopped">("pending");
+  const [value, setValue] = useState("00000");
+  const randomValueRef = useRef<ITicket | null>(null);
+
+  const { history, ticket } = useConfig((state) => {
+    // const slot = state.getSlot(slotParam);
+
+    return {
+      history: {
+        set: state.setHistory(slotParam, historyParam, prizeParam, Number(orderParam)),
+      },
+      ticket: {
+        random: state.randomTicket(slotParam, prizeParam),
+      },
+    };
+  });
+
+  const resetValue = () => {
+    setValue("00000");
+  };
+
+  const handleRun = () => {
+    setState("started");
+
+    randomValueRef.current = ticket.random();
+  };
+
+  const handleStop = () => {
+    setState("stopped");
+
+    if (!randomValueRef.current) return;
+
+    setValue(randomValueRef.current.value.toString());
+    history.set(randomValueRef.current);
+  };
 
   const handleClose = () => {
+    randomValueRef.current = null;
+    resetValue();
+    setState("pending");
+
     setPrize(undefined);
   };
 
   return (
     <Modal
-      open={Boolean(_slotParam && _historyParam && _prize)}
+      open={Boolean(slotParam && historyParam && prizeParam)}
       closeIcon={false}
       closable={false}
       centered
       width={1000}
       footer={false}
+      destroyOnClose
     >
       <div className="h-[500px] flex items-center flex-col relative justify-center">
-        <Typography className="text-[200px] font-normal">{~~(Math.random() * 10000)}</Typography>
+        <Typography className="text-[200px] font-normal">{value}</Typography>
 
-        <div className="flex gap-3 absolute bottom-3">
-          <AntButton htmlType="button" size="large" onClick={handleClose}>
-            CLOSE
-          </AntButton>
-          <AntButton htmlType="button" size="large" onClick={handleRun}>
-            START
-          </AntButton>
+        <div className="flex flex-col gap-3 absolute bottom-3">
+          {state === "pending" && (
+            <>
+              <AntButton
+                className="min-w-[200px]"
+                htmlType="button"
+                type="primary"
+                size="large"
+                onClick={handleRun}
+              >
+                START
+              </AntButton>
+              <AntButton
+                className="min-w-[200px]"
+                htmlType="button"
+                size="large"
+                onClick={handleClose}
+              >
+                CLOSE
+              </AntButton>
+            </>
+          )}
+          {state === "started" && (
+            <AntButton
+              type="primary"
+              className="min-w-[200px]"
+              htmlType="button"
+              size="large"
+              onClick={handleStop}
+            >
+              STOP
+            </AntButton>
+          )}
+
+          {state === "stopped" && (
+            <AntButton
+              className="min-w-[200px]"
+              htmlType="button"
+              size="large"
+              onClick={handleClose}
+            >
+              CLOSE
+            </AntButton>
+          )}
         </div>
       </div>
     </Modal>

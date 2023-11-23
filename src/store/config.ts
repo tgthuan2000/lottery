@@ -83,6 +83,16 @@ export type ConfigStore = {
   generateTicket(slotId: string | undefined): (from: number, to: number) => void;
   createHistoryGame(slotId: string | undefined): () => string | null;
   deleteSlotHistory(slotId: string | undefined): (historyId: string) => void;
+  setHistory(
+    slotId: string | undefined,
+    historyId: string | undefined,
+    prizeId: string | undefined,
+    order: number
+  ): (ticket: ITicket) => void;
+  randomTicket(
+    slotId: string | undefined,
+    prizeId: string | undefined
+  ): () => IPrize["tickets"][string] | null;
 
   /**
    * TICKET
@@ -223,6 +233,36 @@ export const useConfig = create<ConfigStore>()(
             });
 
             return historyId;
+          };
+        },
+
+        randomTicket(slotId, prizeId) {
+          return () => {
+            if (!slotId || !prizeId) return null;
+
+            const state = getConfig();
+
+            const tickets = state.slots[slotId].prizes[prizeId].tickets;
+
+            const ticketIds = Object.keys(tickets);
+
+            const randomIndex = Math.floor(Math.random() * ticketIds.length);
+
+            const ticketId = ticketIds[randomIndex];
+
+            return tickets[ticketId];
+          };
+        },
+
+        setHistory(slotId, historyId, prizeId, order) {
+          return (ticket) => {
+            if (!slotId || !historyId || !prizeId || isNaN(order)) return;
+
+            setConfig((state) => {
+              state.slots[slotId].history[historyId].prizes[prizeId][order] = ticket;
+
+              return { slots: state.slots };
+            });
           };
         },
 
