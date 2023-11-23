@@ -2,7 +2,7 @@ import { Card, Dropdown, Input, Tooltip, Typography } from "antd";
 import { MenuProps } from "antd/lib";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
-import { ArrowLeftIcon, ArrowRightIcon, XIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, MaximizeIcon, MinusIcon, XIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "~/shared/components/button";
@@ -11,6 +11,7 @@ import TicketRangeInput from "~/shared/components/ticket-range-input";
 import { SEARCH_PARAMS } from "~/shared/constants/search-param";
 import useSearchParam from "~/shared/hooks/use-search-param";
 import { useConfig } from "~/store/config";
+import { cn } from "~/util";
 
 export default function ConfigPage() {
   const navigate = useNavigate();
@@ -36,6 +37,8 @@ export default function ConfigPage() {
         set: state.setPrize(slotParam),
         setSlot: state.setPrizeSlot(slotParam),
         delete: state.deletePrize(slotParam),
+        minimize: state.minimizePrize(slotParam),
+        maximize: state.maximizePrize(slotParam),
         deleteTicket: state.deletePrizeTicket(slotParam),
         deleteAllTicket: state.deleteAllPrizeTicket(slotParam),
         addTicket: state.addPrizeTicket(slotParam),
@@ -147,63 +150,83 @@ export default function ConfigPage() {
               }
               key={_prize._id}
               extra={
-                <XIcon
-                  className="text-gray-700 h-5 w-5 mt-1 cursor-pointer hover:opacity-50"
-                  onClick={() => prize.delete(_prize._id)}
-                />
-              }
-            >
-              <div className="flex flex-col gap-5">
-                <div className="flex items-center gap-5 flex-wrap">
-                  <label>
-                    <Typography>Name</Typography>
-                    <Input
-                      defaultValue={_prize.name}
-                      onChange={debounce(
-                        (e) => prize.set(_prize._id, "name", e.target.value),
-                        1000
-                      )}
-                      className="w-fit"
+                <div
+                  className={cn("space-x-2 opacity-0 group-hover:opacity-100", {
+                    "opacity-100": !_prize.minimized,
+                  })}
+                >
+                  {_prize.minimized ? (
+                    <MaximizeIcon
+                      className="text-gray-700 h-5 w-5 mt-1 cursor-pointer hover:opacity-50"
+                      onClick={() => prize.maximize(_prize._id)}
                     />
-                  </label>
-
-                  <label>
-                    <Typography>Value</Typography>
-                    <Input
-                      value={_prize.value}
-                      onChange={(e) => prize.set(_prize._id, "value", e.target.value)}
-                      className="w-fit"
+                  ) : (
+                    <MinusIcon
+                      className="text-gray-700 h-5 w-5 mt-1 cursor-pointer hover:opacity-50"
+                      onClick={() => prize.minimize(_prize._id)}
                     />
-                  </label>
-
-                  <label>
-                    <Typography>Slot</Typography>
-                    <Input
-                      defaultValue={_prize.slot}
-                      className="w-40"
-                      onChange={debounce(
-                        (e) => prize.setSlot(_prize._id, Number(e.target.value)),
-                        1000
-                      )}
-                    />
-                  </label>
-
-                  <TicketRangeInput
-                    label="Ticket"
-                    min={slot.value?.from}
-                    max={slot.value?.to}
-                    onSubmit={(from, to) => prize.generateTicket(_prize._id, from, to)}
+                  )}
+                  <XIcon
+                    className="text-gray-700 h-5 w-5 mt-1 cursor-pointer hover:opacity-50"
+                    onClick={() => prize.delete(_prize._id)}
                   />
                 </div>
+              }
+              className={cn("group", { "[&>.ant-card-body]:p-0": _prize.minimized })}
+            >
+              {!_prize.minimized && (
+                <div className="flex flex-col gap-5">
+                  <div className="flex items-center gap-5 flex-wrap">
+                    <label>
+                      <Typography>Name</Typography>
+                      <Input
+                        defaultValue={_prize.name}
+                        onChange={debounce(
+                          (e) => prize.set(_prize._id, "name", e.target.value),
+                          1000
+                        )}
+                        className="w-fit"
+                      />
+                    </label>
 
-                <TicketList
-                  value={utils.convertToList(_prize.tickets)}
-                  getItemKey={(item) => item._id}
-                  getItemLabel={(item) => item.label}
-                  onDeleteItem={(ticketId) => prize.deleteTicket(_prize._id, ticketId)}
-                  onDeleteAll={() => prize.deleteAllTicket(_prize._id)}
-                />
-              </div>
+                    <label>
+                      <Typography>Value</Typography>
+                      <Input
+                        value={_prize.value}
+                        onChange={(e) => prize.set(_prize._id, "value", e.target.value)}
+                        className="w-fit"
+                      />
+                    </label>
+
+                    <label>
+                      <Typography>Slot</Typography>
+                      <Input
+                        defaultValue={_prize.slot}
+                        className="w-40"
+                        onChange={debounce(
+                          (e) => prize.setSlot(_prize._id, Number(e.target.value)),
+                          1000
+                        )}
+                      />
+                    </label>
+
+                    <TicketRangeInput
+                      label="Ticket"
+                      min={slot.value?.from}
+                      max={slot.value?.to}
+                      onSubmit={(from, to) => prize.generateTicket(_prize._id, from, to)}
+                    />
+                  </div>
+
+                  <TicketList
+                    value={utils.convertToList(_prize.tickets)}
+                    getItemKey={(item) => item._id}
+                    getItemLabel={(item) => item.label}
+                    onDeleteItem={(ticketId) => prize.deleteTicket(_prize._id, ticketId)}
+                    onDeleteAll={() => prize.deleteAllTicket(_prize._id)}
+                  />
+                </div>
+              )}
             </Card>
           ))}
         </div>

@@ -54,7 +54,7 @@ export default function LotteryPage() {
                 </div>
               }
             >
-              <div className="flex gap-5 justify-center items-center">
+              <div className="flex gap-5 flex-wrap justify-center items-center">
                 {Array.from({ length: _prize.slot }).map((_, order) => {
                   const _ticket = history.value?.prizes[_prize._id][order];
 

@@ -19,6 +19,7 @@ interface IPrize extends IBase {
   asset?: string;
   tickets: Record<string, ITicket>;
   slot: number;
+  minimized?: boolean;
 }
 
 interface ITicket extends IBase {

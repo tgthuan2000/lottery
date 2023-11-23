@@ -110,6 +110,8 @@ export type ConfigStore = {
   ): <T extends IPrize = IPrize>(prizeId: string, field: keyof T, value: T[keyof T]) => void;
   setPrizeSlot(slotId: string | undefined): (prizeId: string, slotNum: number) => void;
   deletePrize(slotId: string | undefined): (prizeId: string) => void;
+  minimizePrize(slotId: string | undefined): (prizeId: string) => void;
+  maximizePrize(slotId: string | undefined): (prizeId: string) => void;
   deletePrizeTicket(slotId: string | undefined): (prizeId: string, ticketId: string) => void;
   deleteAllPrizeTicket(slotId: string | undefined): (prizeId: string) => void;
   addPrizeTicket(
@@ -243,9 +245,12 @@ export const useConfig = create<ConfigStore>()(
 
             const state = getConfig();
 
-            const historyTicketIds = Object.values(
-              state.slots[slotId].history[historyId].prizes[prizeId]
-            ).map((ticket) => ticket._id);
+            /**
+             * Get History's prize tickets value
+             */
+            const historyTicketValues = Object.values(state.slots[slotId].history[historyId].prizes)
+              .flatMap((prize) => Object.values(prize))
+              .map((ticket) => ticket.value);
 
             let tickets = state.slots[slotId].prizes[prizeId].tickets;
 
@@ -255,9 +260,9 @@ export const useConfig = create<ConfigStore>()(
             }
 
             /** Remove existed ticket */
-            const ticketIds = Object.keys(tickets).filter((ticketId) => {
-              return !historyTicketIds.includes(ticketId);
-            });
+            const ticketIds = Object.values(tickets)
+              .filter((ticket) => !historyTicketValues.includes(ticket.value))
+              .map((ticket) => ticket._id);
 
             if (isEmpty(ticketIds)) return null;
 
@@ -383,6 +388,30 @@ export const useConfig = create<ConfigStore>()(
 
             setConfig((state) => {
               delete state.slots[slotId].prizes[prizeId];
+
+              return { slots: state.slots };
+            });
+          };
+        },
+
+        minimizePrize(slotId) {
+          return (prizeId) => {
+            if (!slotId) return;
+
+            setConfig((state) => {
+              state.slots[slotId].prizes[prizeId].minimized = true;
+
+              return { slots: state.slots };
+            });
+          };
+        },
+
+        maximizePrize(slotId) {
+          return (prizeId) => {
+            if (!slotId) return;
+
+            setConfig((state) => {
+              state.slots[slotId].prizes[prizeId].minimized = false;
 
               return { slots: state.slots };
             });
