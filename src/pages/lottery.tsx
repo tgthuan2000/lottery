@@ -131,7 +131,7 @@ const LotteryModal = () => {
 
     if (!randomValueRef.current) return;
 
-    setValue(randomValueRef.current.value.toString());
+    setValue(randomValueRef.current.label.toString());
     history.set(randomValueRef.current);
   };
 
