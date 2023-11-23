@@ -111,7 +111,7 @@ const LotteryModal = () => {
         set: state.setHistory(slotParam, historyParam, prizeParam, Number(orderParam)),
       },
       ticket: {
-        random: state.randomTicket(slotParam, prizeParam),
+        random: state.randomTicket(slotParam, prizeParam, historyParam),
       },
     };
   });

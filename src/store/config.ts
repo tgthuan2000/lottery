@@ -91,7 +91,8 @@ export type ConfigStore = {
   ): (ticket: ITicket) => void;
   randomTicket(
     slotId: string | undefined,
-    prizeId: string | undefined
+    prizeId: string | undefined,
+    historyId: string | undefined
   ): () => IPrize["tickets"][string] | null;
 
   /**
@@ -236,15 +237,29 @@ export const useConfig = create<ConfigStore>()(
           };
         },
 
-        randomTicket(slotId, prizeId) {
+        randomTicket(slotId, prizeId, historyId) {
           return () => {
-            if (!slotId || !prizeId) return null;
+            if (!slotId || !prizeId || !historyId) return null;
 
             const state = getConfig();
 
-            const tickets = state.slots[slotId].prizes[prizeId].tickets;
+            const historyTicketIds = Object.values(
+              state.slots[slotId].history[historyId].prizes[prizeId]
+            ).map((ticket) => ticket._id);
 
-            const ticketIds = Object.keys(tickets);
+            let tickets = state.slots[slotId].prizes[prizeId].tickets;
+
+            /** Set all Prize tickets */
+            if (isEmpty(tickets)) {
+              tickets = state.slots[slotId].tickets;
+            }
+
+            /** Remove existed ticket */
+            const ticketIds = Object.keys(tickets).filter((ticketId) => {
+              return !historyTicketIds.includes(ticketId);
+            });
+
+            if (isEmpty(ticketIds)) return null;
 
             const randomIndex = Math.floor(Math.random() * ticketIds.length);
 
