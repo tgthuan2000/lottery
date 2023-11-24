@@ -145,7 +145,7 @@ const LotteryModal = () => {
     let interval: number | null = null;
 
     if (state === "started") {
-      interval = setInterval(() => setValue(randomValue()), (slot.value?.maxLength ?? 1) * 200);
+      interval = setInterval(() => setValue(randomValue()), (slot.value?.maxLength ?? 1) * 150);
     }
 
     return () => {
@@ -245,6 +245,7 @@ const NumberAnimate = memo((props: { value: number }) => {
       transitions={(index) => ({
         type: "spring",
         duration: index + 2,
+        bounce: 0.3,
       })}
       animateToNumber={value}
       fontStyle={{

@@ -83,11 +83,11 @@ const Ticket = {
         <Badge
           count={
             <XCircleIcon
-              className="opacity-0 group-hover:opacity-100 transition-all h-4 w-4 cursor-pointer hover:opacity-50 text-red-500"
+              className="opacity-0 group-hover/ticket:opacity-100 transition-all h-4 w-4 cursor-pointer hover:opacity-50 text-red-500"
               onClick={onDelete}
             />
           }
-          className="group"
+          className="group/ticket"
         >
           {item}
         </Badge>
