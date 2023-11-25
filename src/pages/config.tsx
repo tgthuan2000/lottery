@@ -112,11 +112,11 @@ export default function ConfigPage() {
       });
     },
     onSuccess() {
-      message.success("Upload successfully!");
+      message.success("Published!");
       queryClient.invalidateQueries({ type: "all", queryKey: GET_SLOTS });
     },
     onError() {
-      message.error("Upload unsuccessfully!");
+      message.error("Publish unsuccessfully!");
     },
   });
 
@@ -135,7 +135,7 @@ export default function ConfigPage() {
         </div>
 
         <div className="flex gap-3 items-center">
-          <Tooltip title="Upload to Cloud" placement="bottom">
+          <Tooltip title="Publish" placement="bottom">
             <Button.Icon
               icon={<UploadCloudIcon />}
               className="h-10 !w-12 flex items-center justify-center"

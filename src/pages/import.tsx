@@ -16,7 +16,7 @@ export default function ImportPage() {
     queryKey: GET_SLOTS,
     queryFn: async () => {
       return await db.fetch<Array<SlotType>>(groq`
-        *[_type == "slot"] {
+        *[_type == "slot"] | order(_updatedAt desc) {
           _id,
           _updatedAt,
           name
