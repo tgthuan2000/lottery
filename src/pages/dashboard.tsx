@@ -1,10 +1,12 @@
-import { Typography } from "antd";
-import { ImportIcon, PlusIcon, TrashIcon, UploadCloudIcon } from "lucide-react";
+import { App, Typography } from "antd";
+import { PlusIcon, TrashIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "~/shared/components/button";
 import { useConfig } from "../store/config";
 
 export default function DashboardPage() {
+  const { modal } = App.useApp();
+
   const [slots, addSlot, removeSlot] = useConfig((state) => [
     state.convertToList(state.slots),
     state.addSlot,
@@ -35,7 +37,12 @@ export default function DashboardPage() {
               <Button.Icon
                 color="red"
                 icon={<TrashIcon className="text-red-500 h-5 w-5" />}
-                onClick={() => removeSlot(slot._id)}
+                onClick={() => {
+                  modal.confirm({ content: "Are you sure?" }).then(
+                    (confirmed) => confirmed && removeSlot(slot._id),
+                    () => {}
+                  );
+                }}
               />
             </div>
           </div>
@@ -43,12 +50,6 @@ export default function DashboardPage() {
         <Button.Slot type="dashed" icon={<PlusIcon />} onClick={() => addSlot()}>
           New Slot
         </Button.Slot>
-        <Link to="import">
-          <Button.Slot icon={<ImportIcon />}>Import Slot</Button.Slot>
-        </Link>
-        <Link to="export">
-          <Button.Slot icon={<UploadCloudIcon />}>Export Slots</Button.Slot>
-        </Link>
       </div>
     </div>
   );

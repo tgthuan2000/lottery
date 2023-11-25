@@ -1,4 +1,4 @@
-import { Card, Dropdown, Input, Tooltip, Typography } from "antd";
+import { App, Card, Dropdown, Input, Tooltip, Typography } from "antd";
 import { MenuProps } from "antd/lib";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
@@ -14,6 +14,7 @@ import { useConfig } from "~/store/config";
 import { cn } from "~/util";
 
 export default function ConfigPage() {
+  const { modal } = App.useApp();
   const navigate = useNavigate();
   const [slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
 
@@ -75,7 +76,11 @@ export default function ConfigPage() {
               danger
               onClick={(e) => {
                 e.stopPropagation();
-                history.delete(_history._id);
+
+                modal.confirm({ content: "Are you sure?" }).then(
+                  (confirmed) => confirmed && history.delete(_history._id),
+                  () => {}
+                );
               }}
               className="absolute left-[calc(100%+20px)] opacity-0 group-hover:opacity-100 top-1/2 -translate-y-1/2"
               icon={<XIcon />}
@@ -84,7 +89,7 @@ export default function ConfigPage() {
         ),
       };
     });
-  }, [history]);
+  }, [history, modal]);
 
   return (
     <div className="flex flex-col gap-3 max-w-5xl mx-auto my-10">
@@ -134,7 +139,12 @@ export default function ConfigPage() {
         getItemKey={(item) => item._id}
         getItemLabel={(item) => item.label}
         onDeleteItem={ticket.delete}
-        onDeleteAll={ticket.deleteAll}
+        onDeleteAll={() => {
+          modal.confirm({ content: "Are you sure?" }).then(
+            (confirmed) => confirmed && ticket.deleteAll(),
+            () => {}
+          );
+        }}
         minimized={slot.value?.minimizeTicket}
         onScale={(minimized) => slot.set("minimizeTicket", minimized)}
       />
@@ -170,7 +180,12 @@ export default function ConfigPage() {
                   )}
                   <XIcon
                     className="text-gray-700 h-5 w-5 mt-1 cursor-pointer hover:opacity-50"
-                    onClick={() => prize.delete(_prize._id)}
+                    onClick={() => {
+                      modal.confirm({ content: "Are you sure?" }).then(
+                        (confirmed) => confirmed && prize.delete(_prize._id),
+                        () => {}
+                      );
+                    }}
                   />
                 </div>
               }
@@ -225,7 +240,12 @@ export default function ConfigPage() {
                     getItemKey={(item) => item._id}
                     getItemLabel={(item) => item.label}
                     onDeleteItem={(ticketId) => prize.deleteTicket(_prize._id, ticketId)}
-                    onDeleteAll={() => prize.deleteAllTicket(_prize._id)}
+                    onDeleteAll={() => {
+                      modal.confirm({ content: "Are you sure?" }).then(
+                        (confirmed) => confirmed && prize.deleteAllTicket(_prize._id),
+                        () => {}
+                      );
+                    }}
                   />
                 </div>
               )}
