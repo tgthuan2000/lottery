@@ -14,9 +14,11 @@ import {
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "~/config/db";
+import { queryClient } from "~/config/query-client";
 import Button from "~/shared/components/button";
 import TicketList from "~/shared/components/ticket-list";
 import TicketRangeInput from "~/shared/components/ticket-range-input";
+import { GET_SLOTS } from "~/shared/constants/query-key";
 import { SEARCH_PARAMS } from "~/shared/constants/search-param";
 import useSearchParam from "~/shared/hooks/use-search-param";
 import { useConfig } from "~/store/config";
@@ -102,15 +104,16 @@ export default function ConfigPage() {
 
   const uploadCloud = useMutation({
     async mutationFn(slotValue: ISlot) {
-      await db.nP_Slot.create({
-        data: {
-          value: JSON.stringify(slotValue),
-          label: slotValue.name,
-        },
+      await db.createOrReplace({
+        _type: "slot",
+        _id: slotValue._id,
+        name: slotValue.name,
+        value: JSON.stringify(slotValue),
       });
     },
     onSuccess() {
       message.success("Upload successfully!");
+      queryClient.invalidateQueries({ type: "all", queryKey: GET_SLOTS });
     },
     onError() {
       message.error("Upload unsuccessfully!");

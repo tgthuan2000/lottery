@@ -1,15 +1,12 @@
 import { Button as AntButton, Descriptions, Modal, Typography } from "antd";
-import { ArrowLeftIcon } from "lucide-react";
 import { Fragment, memo, useCallback, useEffect, useState } from "react";
 import AnimatedNumbers from "react-animated-numbers";
-import { useNavigate } from "react-router-dom";
 import Button from "~/shared/components/button";
 import { SEARCH_PARAMS } from "~/shared/constants/search-param";
 import useSearchParam from "~/shared/hooks/use-search-param";
 import { useConfig } from "~/store/config";
 
 export default function LotteryPage() {
-  const navigate = useNavigate();
   const [slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
   const [historyParam] = useSearchParam(SEARCH_PARAMS.HISTORY);
   const [, setPrize] = useSearchParam(SEARCH_PARAMS.PRIZE);
@@ -32,11 +29,8 @@ export default function LotteryPage() {
 
   return (
     <>
-      <Button.Icon
-        icon={<ArrowLeftIcon />}
-        className="fixed top-2 left-2"
-        onClick={() => navigate(-1)}
-      />
+      <Button.Back />
+
       <div className="flex flex-col gap-5 h-screen overflow-hidden justify-center items-center">
         <Typography.Title level={1}>{slot.value?.name}</Typography.Title>
         <Descriptions bordered layout="horizontal" className="min-w-[500px]">

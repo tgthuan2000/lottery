@@ -1,13 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { createClient } from "@sanity/client";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+export const db = createClient({
+  dataset: "production",
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  apiVersion: import.meta.env.VITE_VERSION_API,
+  token: import.meta.env.VITE_API_TOKEN,
+  useCdn: false,
+  ignoreBrowserTokenWarning: true,
+});
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: import.meta.env.DEV ? ["query", "error", "warn"] : ["error"],
-  });
-
-if (!import.meta.env.PROD) globalForPrisma.prisma = db;

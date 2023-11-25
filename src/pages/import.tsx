@@ -1,16 +1,60 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { App, Empty, Typography } from "antd";
+import { App, Empty, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
+import groq from "groq";
 import { isEmpty } from "lodash";
-import { ArrowLeftIcon, ImportIcon, Loader2Icon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ImportIcon, Loader2Icon } from "lucide-react";
 import { db } from "~/config/db";
 import Button from "~/shared/components/button";
+import { GET_SLOTS } from "~/shared/constants/query-key";
 import { useConfig } from "~/store/config";
 
+type SlotType = { _id: string; _updatedAt: string; name: string };
+
 export default function ImportPage() {
+  const { data, isLoading } = useQuery({
+    queryKey: GET_SLOTS,
+    queryFn: async () => {
+      return await db.fetch<Array<SlotType>>(groq`
+        *[_type == "slot"] {
+          _id,
+          _updatedAt,
+          name
+        }
+      `);
+    },
+  });
+
+  return (
+    <>
+      <Button.Back />
+
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        {isLoading ? (
+          <Typography className="items-center flex">
+            <Loader2Icon className="animate-spin mr-2" />
+            Loading...
+          </Typography>
+        ) : isEmpty(data) ? (
+          <Empty description="Empty Slot!" />
+        ) : (
+          <div className="flex flex-col gap-3">
+            <Button.Reload queryKey={GET_SLOTS} />
+
+            {data?.map((slot) => (
+              <Item key={slot._id} data={slot} />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+const Item = (props: { data: SlotType }) => {
+  const { data } = props;
+
   const { message } = App.useApp();
-  const navigate = useNavigate();
 
   const { slot } = useConfig((state) => {
     return {
@@ -20,30 +64,17 @@ export default function ImportPage() {
     };
   });
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["npp/import/slots"],
-    queryFn: async () => {
-      return await db.nP_Slot.findMany({
-        select: {
-          id: true,
-          createdAt: true,
-          label: true,
-        },
-      });
-    },
-  });
-
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     async mutationFn(id: string) {
       try {
-        const data = await db.nP_Slot.findFirst({
-          where: {
-            id,
-          },
-          select: {
-            value: true,
-          },
-        });
+        const data = await db.fetch<{ value: string }>(
+          groq`
+          *[_type == "slot" && _id == $_id][0] {
+            value
+          }
+          `,
+          { _id: id }
+        );
 
         if (!data) return;
 
@@ -67,47 +98,22 @@ export default function ImportPage() {
   };
 
   return (
-    <>
-      <Button.Icon
-        icon={<ArrowLeftIcon />}
-        className="fixed top-2 left-2"
-        onClick={() => navigate(-1)}
-      />
+    <div className="flex group items-start justify-between gap-5 flex-wrap p-3 rounded-md border border-solid border-gray-100">
+      <div className="flex flex-col gap-1">
+        <Typography.Title level={5} className="!my-0">
+          {data.name}
+        </Typography.Title>
 
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        {isLoading ? (
-          <Typography className="items-center flex">
-            <Loader2Icon className="animate-spin mr-2" />
-            Loading...
-          </Typography>
-        ) : isEmpty(data) ? (
-          <Empty description="Empty Slot!" />
-        ) : (
-          <div className="flex flex-col gap-3">
-            {data?.map((slot) => (
-              <div
-                key={slot.id}
-                className="flex group: items-start justify-between gap-5 flex-wrap p-3 rounded-md border border-solid border-gray-100"
-              >
-                <div className="flex flex-col gap-1">
-                  <Typography.Title level={5} className="!my-0">
-                    {slot.label}
-                  </Typography.Title>
-
-                  <Typography.Text>
-                    {dayjs(slot.createdAt).format("HH:mm DD/MM/YYYY")}
-                  </Typography.Text>
-                </div>
-
-                <Button.Icon
-                  onClick={() => handleImport(slot.id)}
-                  icon={<ImportIcon className="h-5 w-5" />}
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        <Typography.Text>{dayjs(data._updatedAt).format("HH:mm - DD/MM/YYYY")}</Typography.Text>
       </div>
-    </>
+
+      <Tooltip title="Import">
+        <Button.Icon
+          loading={isPending}
+          onClick={() => handleImport(data._id)}
+          icon={<ImportIcon className="h-5 w-5" />}
+        />
+      </Tooltip>
+    </div>
   );
-}
+};
