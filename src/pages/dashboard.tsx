@@ -1,5 +1,5 @@
 import { App, Typography } from "antd";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { PlusIcon, TrashIcon, UploadCloudIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "~/shared/components/button";
 import { useConfig } from "../store/config";
@@ -50,6 +50,9 @@ export default function DashboardPage() {
         <Button.Slot type="dashed" icon={<PlusIcon />} onClick={() => addSlot()}>
           New Slot
         </Button.Slot>
+        <Link to="import">
+          <Button.Slot icon={<UploadCloudIcon />}>Import Slot</Button.Slot>
+        </Link>
       </div>
     </div>
   );

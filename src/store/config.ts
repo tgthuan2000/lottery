@@ -74,6 +74,7 @@ export type ConfigStore = {
    * SLOT
    */
   slots: Record<string, ISlot>;
+  importSlot(payload: ISlot): void;
   addSlot(slotName?: string): void;
   setSlot(
     slotId: string | undefined
@@ -145,6 +146,14 @@ export const useConfig = create<ConfigStore>()(
          * SLOT
          */
         slots: { [defaultSlot._id]: defaultSlot },
+
+        importSlot(payload) {
+          setConfig((state) => {
+            state.slots[payload._id] = payload;
+
+            return { slots: state.slots };
+          });
+        },
 
         addSlot(slotName = `Slot ${Object.keys(getConfig().slots).length + 1}`) {
           setConfig((state) => {

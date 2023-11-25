@@ -1,10 +1,19 @@
+import { useMutation } from "@tanstack/react-query";
 import { App, Card, Dropdown, Input, Tooltip, Typography } from "antd";
 import { MenuProps } from "antd/lib";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
-import { ArrowLeftIcon, ArrowRightIcon, MaximizeIcon, MinusIcon, XIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  MaximizeIcon,
+  MinusIcon,
+  UploadCloudIcon,
+  XIcon,
+} from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { db } from "~/config/db";
 import Button from "~/shared/components/button";
 import TicketList from "~/shared/components/ticket-list";
 import TicketRangeInput from "~/shared/components/ticket-range-input";
@@ -14,7 +23,7 @@ import { useConfig } from "~/store/config";
 import { cn } from "~/util";
 
 export default function ConfigPage() {
-  const { modal } = App.useApp();
+  const { modal, message } = App.useApp();
   const navigate = useNavigate();
   const [slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
 
@@ -91,8 +100,29 @@ export default function ConfigPage() {
     });
   }, [history, modal]);
 
+  const uploadCloud = useMutation({
+    async mutationFn(slotValue: ISlot) {
+      await db.slot.create({
+        data: {
+          value: JSON.stringify(slotValue),
+          label: slotValue.name,
+        },
+      });
+    },
+    onSuccess() {
+      message.success("Upload successfully!");
+    },
+    onError() {
+      message.error("Upload unsuccessfully!");
+    },
+  });
+
+  const handleUploadCloud = () => {
+    slot.value && uploadCloud.mutate(slot.value);
+  };
+
   return (
-    <div className="flex flex-col gap-3 max-w-5xl mx-auto my-10">
+    <div className="flex flex-col gap-3 max-w-5xl px-3 mx-auto my-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Tooltip title="Back">
@@ -101,7 +131,15 @@ export default function ConfigPage() {
           <Typography.Title>{slot.value?.name || "Slot Name"}</Typography.Title>
         </div>
 
-        <div>
+        <div className="flex gap-3 items-center">
+          <Tooltip title="Upload to Cloud" placement="bottom">
+            <Button.Icon
+              icon={<UploadCloudIcon />}
+              className="h-10 !w-12 flex items-center justify-center"
+              onClick={handleUploadCloud}
+              loading={uploadCloud.isPending}
+            />
+          </Tooltip>
           <Dropdown.Button
             htmlType="button"
             size="large"
