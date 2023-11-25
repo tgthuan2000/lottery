@@ -1,3 +1,4 @@
+import Fireworks from "@fireworks-js/react";
 import { Button as AntButton, Descriptions, Modal, Typography } from "antd";
 import { Fragment, memo, useCallback, useEffect, useState } from "react";
 import AnimatedNumbers from "react-animated-numbers";
@@ -217,7 +218,7 @@ const LotteryModal = () => {
 
           {state === "canClose" && (
             <AntButton
-              className="min-w-[200px]"
+              className="min-w-[200px] z-50"
               htmlType="button"
               size="large"
               onClick={handleClose}
@@ -227,6 +228,19 @@ const LotteryModal = () => {
           )}
         </div>
       </div>
+
+      {state === "canClose" && (
+        <Fireworks
+          options={{ opacity: 0.5, mouse: { click: false } }}
+          style={{
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            position: "fixed",
+          }}
+        />
+      )}
     </Modal>
   );
 };
