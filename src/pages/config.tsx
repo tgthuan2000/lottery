@@ -102,7 +102,7 @@ export default function ConfigPage() {
 
   const uploadCloud = useMutation({
     async mutationFn(slotValue: ISlot) {
-      await db.slot.create({
+      await db.nP_Slot.create({
         data: {
           value: JSON.stringify(slotValue),
           label: slotValue.name,

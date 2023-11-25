@@ -23,7 +23,7 @@ export default function ImportPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["npp/import/slots"],
     queryFn: async () => {
-      return await db.slot.findMany({
+      return await db.nP_Slot.findMany({
         select: {
           id: true,
           createdAt: true,
@@ -36,7 +36,7 @@ export default function ImportPage() {
   const { mutate } = useMutation({
     async mutationFn(id: string) {
       try {
-        const data = await db.slot.findFirst({
+        const data = await db.nP_Slot.findFirst({
           where: {
             id,
           },
