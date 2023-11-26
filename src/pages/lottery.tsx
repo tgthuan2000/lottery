@@ -135,14 +135,13 @@ const LotteryModal = () => {
 
     setValue(Ticket.getNumber(randomTicket.value, slot.value?.maxLength, "0"));
 
-    history.set(randomTicket);
-
     setTimeout(() => {
       slotCounterRefs.current.forEach((ref) => ref.startAnimation());
     }, 0);
 
     setTimeout(() => {
       setState("canClose");
+      history.set(randomTicket);
     }, (slot.value?.maxLength ?? 1) * 3000);
   };
 
@@ -173,7 +172,7 @@ const LotteryModal = () => {
               autoAnimationStart={false}
               value={value[index]}
               animateUnchanged={true}
-              dummyCharacterCount={100 * (index + 1)}
+              dummyCharacterCount={100}
               duration={3 * (index + 1)}
               charClassName="text-7xl scale-[2]"
             />
