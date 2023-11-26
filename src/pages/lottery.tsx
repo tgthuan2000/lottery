@@ -1,10 +1,11 @@
 import Fireworks from "@fireworks-js/react";
 import { Button as AntButton, Descriptions, Modal, Typography } from "antd";
-import { Fragment, memo, useCallback, useEffect, useState } from "react";
-import AnimatedNumbers from "react-animated-numbers";
+import { Fragment, useMemo, useRef, useState } from "react";
+import SlotCounter, { SlotCounterRef } from "react-slot-counter";
 import Button from "~/shared/components/button";
 import { SEARCH_PARAMS } from "~/shared/constants/search-param";
 import useSearchParam from "~/shared/hooks/use-search-param";
+import Ticket from "~/shared/service/ticket";
 import { useConfig } from "~/store/config";
 
 export default function LotteryPage() {
@@ -90,6 +91,8 @@ export default function LotteryPage() {
 }
 
 const LotteryModal = () => {
+  const slotCounterRefs = useRef<SlotCounterRef[]>([]);
+
   const [, , slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
   const [, , historyParam] = useSearchParam(SEARCH_PARAMS.HISTORY);
   const [, setPrize, prizeParam] = useSearchParam(SEARCH_PARAMS.PRIZE);
@@ -111,56 +114,36 @@ const LotteryModal = () => {
     };
   });
 
-  // const defaultValue = useMemo(
-  //   () => Ticket.getNumber("0", slot.value?.maxLength, "0"),
-  //   [slot.value?.maxLength]
-  // );
+  const defaultValue = useMemo(
+    () => Ticket.getNumber("0", slot.value?.maxLength, "0"),
+    [slot.value?.maxLength]
+  );
 
-  const randomValue = useCallback(() => {
-    const length = slot.value?.maxLength ?? 1;
-    const min = Math.pow(10, length) - 1;
-    const max = Math.pow(10, length - 1);
-    const randomValue = Math.floor(Math.random() * (max - min + 1)) + min;
-
-    return randomValue;
-  }, [slot.value?.maxLength]);
-
-  const [state, setState] = useState<"pending" | "started" | "stopped" | "canClose">("pending");
-  const [value, setValue] = useState<number>(0);
+  const [state, setState] = useState<"pending" | "started" | "canClose">("pending");
+  const [value, setValue] = useState<string>(defaultValue);
 
   const resetValue = () => {
-    setValue(0);
+    setValue(defaultValue);
   };
 
   const handleRun = () => {
     setState("started");
-  };
-
-  useEffect(() => {
-    let interval: number | null = null;
-
-    if (state === "started") {
-      interval = setInterval(() => setValue(randomValue()), (slot.value?.maxLength ?? 1) * 150);
-    }
-
-    return () => {
-      interval && clearInterval(interval);
-    };
-  }, [randomValue, slot.value?.maxLength, state]);
-
-  const handleStop = () => {
-    setState("stopped");
 
     const randomTicket = ticket.random();
 
     if (!randomTicket) return;
 
-    setValue(Number(randomTicket.value));
+    setValue(Ticket.getNumber(randomTicket.value, slot.value?.maxLength, "0"));
+
     history.set(randomTicket);
 
     setTimeout(() => {
+      slotCounterRefs.current.forEach((ref) => ref.startAnimation());
+    }, 0);
+
+    setTimeout(() => {
       setState("canClose");
-    }, 5000);
+    }, (slot.value?.maxLength ?? 1) * 3000);
   };
 
   const handleClose = () => {
@@ -181,7 +164,22 @@ const LotteryModal = () => {
       destroyOnClose
     >
       <div className="h-[500px] flex items-center flex-col relative justify-center">
-        <NumberAnimate value={value} />
+        <div className="flex items-center flex-nowrap justify-center gap-16">
+          {Array.from({ length: value.length }).map((_, index) => (
+            <SlotCounter
+              key={index}
+              ref={(ref) => ref && slotCounterRefs.current.push(ref)}
+              startValue={defaultValue[index]}
+              autoAnimationStart={false}
+              value={value[index]}
+              animateUnchanged={true}
+              dummyCharacterCount={100 * (index + 1)}
+              duration={3 * (index + 1)}
+              charClassName="text-7xl scale-[2]"
+            />
+          ))}
+        </div>
+
         <div className="flex flex-col gap-3 absolute bottom-3">
           {state === "pending" && (
             <>
@@ -203,17 +201,6 @@ const LotteryModal = () => {
                 CLOSE
               </AntButton>
             </>
-          )}
-          {state === "started" && (
-            <AntButton
-              type="primary"
-              className="min-w-[200px]"
-              htmlType="button"
-              size="large"
-              onClick={handleStop}
-            >
-              STOP
-            </AntButton>
           )}
 
           {state === "canClose" && (
@@ -244,24 +231,3 @@ const LotteryModal = () => {
     </Modal>
   );
 };
-
-const NumberAnimate = memo((props: { value: number }) => {
-  const { value } = props;
-
-  return (
-    <AnimatedNumbers
-      transitions={(index) => ({
-        type: "spring",
-        duration: index + 2,
-        bounce: 0.3,
-      })}
-      animateToNumber={value}
-      fontStyle={{
-        fontSize: 200,
-        fontWeight: 400,
-        userSelect: "none",
-        pointerEvents: "none",
-      }}
-    />
-  );
-});

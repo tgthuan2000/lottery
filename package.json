@@ -22,9 +22,9 @@
     "lucide-react": "^0.292.0",
     "numeral": "^2.0.6",
     "react": "^18.2.0",
-    "react-animated-numbers": "^0.17.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.19.0",
+    "react-slot-counter": "^2.1.1",
     "tailwind-merge": "^2.0.0",
     "uuid": "^9.0.1",
     "zustand": "^4.4.6"
