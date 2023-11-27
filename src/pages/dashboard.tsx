@@ -1,16 +1,21 @@
-import { App, Typography } from "antd";
-import { PlusIcon, TrashIcon, UploadCloudIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { App, Tooltip, Typography } from "antd";
+import { PlusIcon, SettingsIcon, TrashIcon, UploadCloudIcon } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "~/shared/components/button";
+import DropdownHistory from "~/shared/components/dropdown-history";
+import useConfirmPassword from "~/shared/hooks/use-confirm-password";
 import { useConfig } from "../store/config";
 
 export default function DashboardPage() {
-  const { modal } = App.useApp();
+  const navigate = useNavigate();
+  const { message } = App.useApp();
+  const confirmPassword = useConfirmPassword();
 
-  const [slots, addSlot, removeSlot] = useConfig((state) => [
+  const [slots, addSlot, removeSlot, verifySlotPassword] = useConfig((state) => [
     state.convertToList(state.slots),
     state.addSlot,
     state.removeSlot,
+    state.verifySlotPassword,
   ]);
 
   return (
@@ -24,26 +29,38 @@ export default function DashboardPage() {
           Lottery
         </Typography.Title>
         {slots.map((slot) => (
-          <div key={slot._id} className="group relative">
-            <Link
-              to={{
-                pathname: "/config",
-                search: `slot=${slot._id}`,
-              }}
-            >
-              <Button.Slot>{slot.name}</Button.Slot>
-            </Link>
-            <div className="absolute group-hover:opacity-100 opacity-0 transition-all left-[calc(100%+12px)] top-1/2 -translate-y-1/2">
-              <Button.Icon
-                color="red"
-                icon={<TrashIcon className="text-red-500 h-5 w-5" />}
-                onClick={() => {
-                  modal.confirm({ content: "Are you sure?" }).then(
-                    (confirmed) => confirmed && removeSlot(slot._id),
-                    () => {}
-                  );
-                }}
-              />
+          <div key={slot._id} className="group relative flex w-full">
+            <DropdownHistory slotParam={slot._id}>
+              <Tooltip title="New Game">{slot.name}</Tooltip>
+            </DropdownHistory>
+
+            <div className="absolute flex items-center gap-2 group-hover:opacity-100 opacity-0 transition-all left-[calc(100%+12px)] top-1/2 -translate-y-1/2">
+              <Tooltip title="Config Slot">
+                <Button.Icon
+                  icon={<SettingsIcon className="h-5 w-5" />}
+                  onClick={() => navigate({ pathname: "/config", search: `slot=${slot._id}` })}
+                />
+              </Tooltip>
+
+              <Tooltip title="Delete Slot">
+                <Button.Icon
+                  color="red"
+                  icon={<TrashIcon className="text-red-500 h-5 w-5" />}
+                  onClick={() => {
+                    confirmPassword({
+                      title: "Delete slot?",
+                      onConfirm(value) {
+                        if (value && verifySlotPassword(slot._id, value)) {
+                          removeSlot(slot._id);
+                          message.success("Remove successfully");
+                        } else {
+                          message.error("Remove unsuccessfully");
+                        }
+                      },
+                    });
+                  }}
+                />
+              </Tooltip>
             </div>
           </div>
         ))}

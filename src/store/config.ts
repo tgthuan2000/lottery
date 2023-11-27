@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { MD5 } from "crypto-js";
 import dayjs from "dayjs";
 import { isEmpty } from "lodash";
 import { v4 as uuid } from "uuid";
@@ -64,6 +65,7 @@ const generateDefaultSlot = (options: { prizeName?: string; slotName?: string } 
     tickets: defaultTicket,
     prizes: defaultPrize,
     history: {},
+    password: MD5("123").toString(),
   };
 
   return { ...createDefaultSlot(), ...defaultSlot };
@@ -95,6 +97,7 @@ export type ConfigStore = {
     prizeId: string | undefined,
     historyId: string | undefined
   ): () => IPrize["tickets"][string] | null;
+  verifySlotPassword(slotId: string, inputValue: string): boolean;
 
   /**
    * TICKET
@@ -281,6 +284,14 @@ export const useConfig = create<ConfigStore>()(
 
             return tickets[ticketId];
           };
+        },
+
+        verifySlotPassword(slotId, password) {
+          const { slots } = getConfig();
+
+          const _password = slots[slotId].password;
+
+          return _password ? MD5(password).toString() === _password : false;
         },
 
         setHistory(slotId, historyId, prizeId, order) {

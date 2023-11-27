@@ -1,25 +1,26 @@
 import { useMutation } from "@tanstack/react-query";
-import { App, Card, Dropdown, Input, Tooltip, Typography } from "antd";
-import { MenuProps } from "antd/lib";
-import dayjs from "dayjs";
+import { App, Card, Input, Tooltip, Typography } from "antd";
+import { MD5 } from "crypto-js";
 import { debounce } from "lodash";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  LockIcon,
   MaximizeIcon,
   MinusIcon,
   UploadCloudIcon,
   XIcon,
 } from "lucide-react";
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "~/config/db";
 import { queryClient } from "~/config/query-client";
 import Button from "~/shared/components/button";
+import DropdownHistory from "~/shared/components/dropdown-history";
 import TicketList from "~/shared/components/ticket-list";
 import TicketRangeInput from "~/shared/components/ticket-range-input";
 import { GET_SLOTS } from "~/shared/constants/query-key";
 import { SEARCH_PARAMS } from "~/shared/constants/search-param";
+import useConfirmPassword from "~/shared/hooks/use-confirm-password";
 import useSearchParam from "~/shared/hooks/use-search-param";
 import { useConfig } from "~/store/config";
 import { cn } from "~/util";
@@ -28,8 +29,9 @@ export default function ConfigPage() {
   const { modal, message } = App.useApp();
   const navigate = useNavigate();
   const [slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
+  const confirmPassword = useConfirmPassword();
 
-  const { slot, ticket, prize, history, utils } = useConfig((state) => {
+  const { slot, ticket, prize, utils } = useConfig((state) => {
     const slotValue = state.getSlot(slotParam);
 
     return {
@@ -56,51 +58,11 @@ export default function ConfigPage() {
         addTicket: state.addPrizeTicket(slotParam),
         generateTicket: state.generatePrizeTicket(slotParam),
       },
-      history: {
-        value: state.convertToList(slotValue?.history),
-        delete: state.deleteSlotHistory(slotParam),
-      },
       utils: {
         convertToList: state.convertToList,
       },
     };
   });
-
-  const lottery = (historyId?: string) => {
-    navigate({
-      pathname: "/lottery",
-      search: `${SEARCH_PARAMS.SLOT}=${slotParam}&${SEARCH_PARAMS.HISTORY}=${
-        historyId ?? slot.createHistory()
-      }`,
-    });
-  };
-
-  const items = useMemo<MenuProps["items"]>(() => {
-    return history.value.map((_history) => {
-      return {
-        key: _history._id,
-        label: (
-          <div className="relative group">
-            {_history.name ?? _history._id.slice(0, 4)} -{" "}
-            {dayjs(_history._createdAt).format("HH:mm DD/MM/YY")}
-            <Button.Icon
-              danger
-              onClick={(e) => {
-                e.stopPropagation();
-
-                modal.confirm({ content: "Are you sure?" }).then(
-                  (confirmed) => confirmed && history.delete(_history._id),
-                  () => {}
-                );
-              }}
-              className="absolute left-[calc(100%+20px)] opacity-0 group-hover:opacity-100 top-1/2 -translate-y-1/2"
-              icon={<XIcon />}
-            />
-          </div>
-        ),
-      };
-    });
-  }, [history, modal]);
 
   const uploadCloud = useMutation({
     async mutationFn(slotValue: ISlot) {
@@ -124,6 +86,20 @@ export default function ConfigPage() {
     slot.value && uploadCloud.mutate(slot.value);
   };
 
+  const handleSetPassword = () => {
+    confirmPassword({
+      title: "Set Password",
+      onConfirm(value) {
+        if (value) {
+          slot.set("password", MD5(value).toString());
+          message.success("Set password was successful");
+        } else {
+          message.error("Set password failed");
+        }
+      },
+    });
+  };
+
   return (
     <div className="flex flex-col gap-3 max-w-5xl px-3 mx-auto my-10">
       <div className="flex items-center justify-between">
@@ -135,6 +111,13 @@ export default function ConfigPage() {
         </div>
 
         <div className="flex gap-3 items-center">
+          <Tooltip title="Set Password" placement="bottom">
+            <Button.Icon
+              icon={<LockIcon />}
+              className="h-10 !w-12 flex items-center justify-center"
+              onClick={handleSetPassword}
+            />
+          </Tooltip>
           <Tooltip title="Publish" placement="bottom">
             <Button.Icon
               icon={<UploadCloudIcon />}
@@ -143,18 +126,12 @@ export default function ConfigPage() {
               loading={uploadCloud.isPending}
             />
           </Tooltip>
-          <Dropdown.Button
-            htmlType="button"
-            size="large"
-            type="primary"
-            menu={{ items, onClick: (value) => lottery(value.key) }}
-            onClick={() => lottery()}
-          >
+          <DropdownHistory type="primary" slotParam={slotParam!}>
             <div className="flex items-center">
               NEW GAME
               <ArrowRightIcon className="ml-2" />
             </div>
-          </Dropdown.Button>
+          </DropdownHistory>
         </div>
       </div>
 

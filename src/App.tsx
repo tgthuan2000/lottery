@@ -14,6 +14,7 @@ import DashboardPage from "./pages/dashboard";
 import ImportPage from "./pages/import";
 import LotteryPage from "./pages/lottery";
 import NotFound from "./shared/components/not-found";
+import PrivatePage from "./shared/components/private-page";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(arraySupport);
@@ -40,7 +41,11 @@ const routers: RouteObject[] = [
   },
   {
     path: "config",
-    element: <ConfigPage />,
+    element: (
+      <PrivatePage>
+        <ConfigPage />
+      </PrivatePage>
+    ),
   },
   {
     path: "lottery",

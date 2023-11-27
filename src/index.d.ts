@@ -12,6 +12,7 @@ interface ISlot extends IBase {
   tickets: Record<string, ITicket>;
   minimizeTicket?: boolean;
   history: Record<string, IHistory>;
+  password?: string;
 }
 
 interface IPrize extends IBase {
