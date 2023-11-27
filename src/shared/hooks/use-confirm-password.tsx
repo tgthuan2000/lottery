@@ -13,21 +13,23 @@ export default function useConfirmPassword() {
       title: ReactNode;
       onConfirm: (inputValue: string | undefined) => void;
     }) => {
-      modal
-        .confirm({
-          title,
-          content: <Input.Password ref={inputRef} placeholder="Enter your slot password" />,
-        })
-        .then(
-          (confirmed) => {
-            const inputValue = inputRef.current?.input?.value;
+      const modalInstance = modal.confirm({
+        title,
+        content: <Input.Password ref={inputRef} placeholder="Enter your slot password" />,
+      });
 
-            if (confirmed) {
-              onConfirm(inputValue);
-            }
-          },
-          () => {}
-        );
+      modalInstance.then(
+        (confirmed) => {
+          const inputValue = inputRef.current?.input?.value;
+
+          if (confirmed) {
+            onConfirm(inputValue);
+          }
+        },
+        () => {}
+      );
+
+      return modalInstance;
     },
     [modal]
   );

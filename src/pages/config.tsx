@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { App, Card, Input, Tooltip, Typography } from "antd";
+import { App, Card, Image, Input, Tooltip, Typography } from "antd";
 import { MD5 } from "crypto-js";
 import { debounce } from "lodash";
 import {
@@ -150,6 +150,21 @@ export default function ConfigPage() {
           to={slot.value?.to}
           onSubmit={slot.generateTicket}
         />
+      </div>
+
+      <div className="flex flex-wrap gap-5 mt-2">
+        <label>
+          <Typography>Background Image</Typography>
+          <Input
+            defaultValue={slot.value?.background}
+            onChange={debounce((e) => slot.set("background", e.target.value), 1000)}
+            className="w-fit"
+          />
+        </label>
+
+        {slot.value?.background && (
+          <Image src={slot.value?.background} className="!h-20 !w-20 object-cover" />
+        )}
       </div>
 
       <TicketList

@@ -26,7 +26,7 @@ export default function PrivatePage(props: Props) {
   });
 
   useEffect(() => {
-    confirmPassword({
+    const modal = confirmPassword({
       title: "Private Page",
       onConfirm(value) {
         if (slotParam && value && slot.verify(slotParam, value)) {
@@ -41,6 +41,7 @@ export default function PrivatePage(props: Props) {
 
     return () => {
       setVerified(false);
+      modal.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

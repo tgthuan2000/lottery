@@ -33,6 +33,10 @@ export default function LotteryPage() {
     <>
       <Button.Back />
 
+      {slot.value?.background && (
+        <img className="-z-10 fixed inset-0 h-screen w-screen object-cover" src={slot.value?.background} />
+      )}
+
       <div className="flex flex-col gap-5 h-screen overflow-hidden justify-center items-center">
         <Typography.Title level={1}>{slot.value?.name}</Typography.Title>
         <Descriptions bordered layout="horizontal" className="min-w-[500px]">
@@ -55,24 +59,27 @@ export default function LotteryPage() {
                 {Array.from({ length: _prize.slot }).map((_, order) => {
                   const _ticket = history.value?.prizes[_prize._id][order];
 
+                  const handleClick = () => {
+                    setPrize((searchParam) => {
+                      searchParam.set(SEARCH_PARAMS.ORDER, order.toString());
+                      searchParam.set(SEARCH_PARAMS.TITLE, _prize.name);
+
+                      return _prize._id;
+                    });
+                  };
+
                   return (
                     <Fragment key={order}>
                       {_ticket ? (
-                        <Typography.Title className="!my-0" level={4}>
+                        <Typography.Title
+                          className="!my-0 cursor-pointer select-none hover:opacity-50"
+                          level={4}
+                          onClick={handleClick}
+                        >
                           {_ticket.label}
                         </Typography.Title>
                       ) : (
-                        <AntButton
-                          htmlType="button"
-                          onClick={() =>
-                            setPrize((searchParam) => {
-                              searchParam.set(SEARCH_PARAMS.ORDER, order.toString());
-
-                              return _prize._id;
-                            })
-                          }
-                          size="large"
-                        >
+                        <AntButton htmlType="button" onClick={handleClick} size="large">
                           TICKET
                         </AntButton>
                       )}
@@ -97,6 +104,7 @@ const LotteryModal = () => {
   const [, , historyParam] = useSearchParam(SEARCH_PARAMS.HISTORY);
   const [, setPrize, prizeParam] = useSearchParam(SEARCH_PARAMS.PRIZE);
   const [, , orderParam] = useSearchParam(SEARCH_PARAMS.ORDER);
+  const [, , titleParam] = useSearchParam(SEARCH_PARAMS.TITLE);
 
   const { slot, history, ticket } = useConfig((state) => {
     const slot = state.getSlot(slotParam);
@@ -158,12 +166,18 @@ const LotteryModal = () => {
       closeIcon={false}
       closable={false}
       centered
-      width={1000}
+      width={"80vw"}
       footer={false}
       destroyOnClose
+      className="relative"
     >
-      <div className="h-[500px] flex items-center flex-col relative justify-center">
-        <div className="flex items-center flex-nowrap justify-center gap-16">
+      <div className="absolute left-1/2 -translate-x-1/2 top-10 hidden">
+        <Typography.Title level={1} className="!my-0 !text-[120px] whitespace-nowrap select-none">
+          {titleParam}
+        </Typography.Title>
+      </div>
+      <div className="h-[70vh] flex items-center flex-col relative justify-center">
+        <div className="flex items-center flex-nowrap justify-center gap-40">
           {Array.from({ length: value.length }).map((_, index) => (
             <SlotCounter
               key={index}
@@ -174,7 +188,7 @@ const LotteryModal = () => {
               animateUnchanged={true}
               dummyCharacterCount={100}
               duration={3 * (index + 1)}
-              charClassName="text-7xl scale-[2]"
+              charClassName="text-7xl scale-[3] border border-solid rounded-md border-gray-200 select-none"
             />
           ))}
         </div>
