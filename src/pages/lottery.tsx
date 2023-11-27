@@ -34,7 +34,10 @@ export default function LotteryPage() {
       <Button.Back />
 
       {slot.value?.background && (
-        <img className="-z-10 fixed inset-0 h-screen w-screen object-cover" src={slot.value?.background} />
+        <img
+          className="-z-10 fixed inset-0 h-screen w-screen object-cover"
+          src={slot.value?.background}
+        />
       )}
 
       <div className="flex flex-col gap-5 h-screen overflow-hidden justify-center items-center">
@@ -157,7 +160,15 @@ const LotteryModal = () => {
     resetValue();
     setState("pending");
 
-    setPrize(undefined);
+    setPrize((searchParam) => {
+      if (searchParam.has(SEARCH_PARAMS.ORDER)) {
+        searchParam.delete(SEARCH_PARAMS.ORDER);
+      }
+      if (searchParam.has(SEARCH_PARAMS.TITLE)) {
+        searchParam.delete(SEARCH_PARAMS.TITLE);
+      }
+      return undefined;
+    });
   };
 
   return (
@@ -171,8 +182,8 @@ const LotteryModal = () => {
       destroyOnClose
       className="relative"
     >
-      <div className="absolute left-1/2 -translate-x-1/2 top-10 hidden">
-        <Typography.Title level={1} className="!my-0 !text-[120px] whitespace-nowrap select-none">
+      <div className="absolute left-1/2 -translate-x-1/2 top-8">
+        <Typography.Title level={1} className="!my-0 !text-[70px] whitespace-nowrap select-none">
           {titleParam}
         </Typography.Title>
       </div>
