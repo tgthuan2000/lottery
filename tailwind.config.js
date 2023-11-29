@@ -8,7 +8,11 @@ export default {
     preflight: false,
   },
   theme: {
-    extend: {},
+    extend: {
+      transitionTimingFunction: {
+        'lottery': 'cubic-bezier(0.075, 0.82, 0.165, 1)',
+      }
+    },
   },
   plugins: [],
 }

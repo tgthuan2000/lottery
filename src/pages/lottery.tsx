@@ -7,6 +7,7 @@ import { SEARCH_PARAMS } from "~/shared/constants/search-param";
 import useSearchParam from "~/shared/hooks/use-search-param";
 import Ticket from "~/shared/service/ticket";
 import { useConfig } from "~/store/config";
+import { cn } from "~/util";
 
 export default function LotteryPage() {
   const [slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
@@ -153,7 +154,7 @@ const LotteryModal = () => {
     setTimeout(() => {
       setState("canClose");
       history.set(randomTicket);
-    }, (slot.value?.maxLength ?? 1) * 3000);
+    }, ((slot.value?.maxLength ?? 1) + 4) * 3000);
   };
 
   const handleClose = () => {
@@ -198,8 +199,14 @@ const LotteryModal = () => {
               value={value[index]}
               animateUnchanged={true}
               dummyCharacterCount={100}
-              duration={3 * (index + 1)}
-              charClassName="text-7xl scale-[3] border border-solid rounded-md border-gray-200 select-none"
+              duration={3 * (index === value.length - 1 ? index + 5 : index + 1)}
+              charClassName={cn(
+                "text-7xl scale-[3] border border-solid rounded-md border-gray-200 select-none",
+                {
+                  "[&>span]:!ease-out": index !== value.length - 1,
+                  "[&>span]:!ease-lottery": index === value.length - 1,
+                }
+              )}
             />
           ))}
         </div>
