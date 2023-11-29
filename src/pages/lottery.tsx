@@ -1,5 +1,6 @@
 import Fireworks from "@fireworks-js/react";
-import { Button as AntButton, Descriptions, Modal, Typography } from "antd";
+import { Button as AntButton, Descriptions, Modal, Tooltip, Typography } from "antd";
+import { XIcon } from "lucide-react";
 import { Fragment, useMemo, useRef, useState } from "react";
 import SlotCounter, { SlotCounterRef } from "react-slot-counter";
 import Button from "~/shared/components/button";
@@ -101,6 +102,9 @@ export default function LotteryPage() {
   );
 }
 
+const MIN_DURATION_SEC = 1.5;
+const LAST_DELAY = 4;
+
 const LotteryModal = () => {
   const slotCounterRefs = useRef<SlotCounterRef[]>([]);
 
@@ -134,6 +138,8 @@ const LotteryModal = () => {
   const [state, setState] = useState<"pending" | "started" | "canClose">("pending");
   const [value, setValue] = useState<string>(defaultValue);
 
+  const durationAnimationSec = value.length >= 3 ? MIN_DURATION_SEC : 3;
+
   const resetValue = () => {
     setValue(defaultValue);
   };
@@ -154,7 +160,7 @@ const LotteryModal = () => {
     setTimeout(() => {
       setState("canClose");
       history.set(randomTicket);
-    }, ((slot.value?.maxLength ?? 1) + 4) * 3000);
+    }, ((slot.value?.maxLength ?? 1) + LAST_DELAY) * (durationAnimationSec * 1000));
   };
 
   const handleClose = () => {
@@ -178,7 +184,7 @@ const LotteryModal = () => {
       closeIcon={false}
       closable={false}
       centered
-      width={"80vw"}
+      width="80vw"
       footer={false}
       destroyOnClose
       className="relative"
@@ -199,7 +205,9 @@ const LotteryModal = () => {
               value={value[index]}
               animateUnchanged={true}
               dummyCharacterCount={100}
-              duration={3 * (index === value.length - 1 ? index + 5 : index + 1)}
+              duration={
+                durationAnimationSec * (index + 1 + (index === value.length - 1 ? LAST_DELAY : 0))
+              }
               charClassName={cn(
                 "text-7xl scale-[3] border border-solid rounded-md border-gray-200 select-none",
                 {
@@ -213,40 +221,27 @@ const LotteryModal = () => {
 
         <div className="flex flex-col gap-3 absolute bottom-3">
           {state === "pending" && (
-            <>
-              <AntButton
-                className="min-w-[200px]"
-                htmlType="button"
-                type="primary"
-                size="large"
-                onClick={handleRun}
-              >
-                START
-              </AntButton>
-              <AntButton
-                className="min-w-[200px]"
-                htmlType="button"
-                size="large"
-                onClick={handleClose}
-              >
-                CLOSE
-              </AntButton>
-            </>
-          )}
-
-          {state === "canClose" && (
             <AntButton
-              className="min-w-[200px] z-50"
+              className="min-w-[200px]"
               htmlType="button"
+              type="primary"
               size="large"
-              onClick={handleClose}
+              onClick={handleRun}
             >
-              CLOSE
+              START
             </AntButton>
           )}
         </div>
       </div>
-
+      {["canClose", "pending"].includes(state) && (
+        <Tooltip title="Close">
+          <Button.Icon
+            icon={<XIcon className="h-6 w-6" />}
+            className="z-50 absolute top-5 right-5"
+            onClick={handleClose}
+          />
+        </Tooltip>
+      )}
       {state === "canClose" && (
         <Fireworks
           options={{ opacity: 0.5, mouse: { click: false } }}
