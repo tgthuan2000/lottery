@@ -150,6 +150,15 @@ export default function ConfigPage() {
           to={slot.value?.to}
           onSubmit={slot.generateTicket}
         />
+
+        <label>
+          <Typography>Text Color</Typography>
+          <Input
+            defaultValue={slot.value?.textColor}
+            onChange={debounce((e) => slot.set("textColor", e.target.value), 1000)}
+            className="w-fit"
+          />
+        </label>
       </div>
 
       <div className="flex flex-wrap gap-5 mt-2">

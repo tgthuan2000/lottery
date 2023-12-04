@@ -5,6 +5,7 @@ interface IBase {
 
 interface ISlot extends IBase {
   name: string;
+  textColor?: string;
   maxLength?: number;
   from?: number;
   to?: number;

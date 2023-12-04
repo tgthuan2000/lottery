@@ -36,10 +36,7 @@ export default function LotteryPage() {
       <Button.Back />
 
       {slot.value?.background && (
-        <img
-          className="-z-10 fixed inset-0 h-screen w-screen object-cover"
-          src={slot.value?.background}
-        />
+        <img src={slot.value?.background} className="-z-10 fixed inset-0 h-screen w-screen" />
       )}
 
       <div className="flex flex-col gap-5 h-screen overflow-hidden justify-center items-center">
@@ -54,7 +51,11 @@ export default function LotteryPage() {
                   <Typography.Title level={5} className="!mb-0 truncate min-w-[100px] !font-light">
                     {_prize.name}
                   </Typography.Title>
-                  <Typography.Title className="!my-0" level={4}>
+                  <Typography.Title
+                    className="!my-0"
+                    level={4}
+                    style={{ color: slot.value?.textColor }}
+                  >
                     {_prize.value}
                   </Typography.Title>
                 </div>
@@ -80,6 +81,7 @@ export default function LotteryPage() {
                           className="!my-0 cursor-pointer select-none hover:opacity-50"
                           level={4}
                           onClick={handleClick}
+                          style={{ color: slot.value?.textColor }}
                         >
                           {_ticket.label}
                         </Typography.Title>
@@ -184,18 +186,28 @@ const LotteryModal = () => {
       closeIcon={false}
       closable={false}
       centered
-      width="80vw"
+      width="90vw"
       footer={false}
       destroyOnClose
       className="relative"
     >
+      {slot.value?.background && (
+        <img className="absolute inset-0 h-full w-full rounded-sm" src={slot.value?.background} />
+      )}
       <div className="absolute left-1/2 -translate-x-1/2 top-8">
-        <Typography.Title level={1} className="!my-0 !text-[70px] whitespace-nowrap select-none">
+        <Typography.Title
+          level={1}
+          className="!my-0 !text-[70px] whitespace-nowrap select-none"
+          style={{ color: slot.value?.textColor }}
+        >
           {titleParam}
         </Typography.Title>
       </div>
-      <div className="h-[70vh] flex items-center flex-col relative justify-center">
-        <div className="flex items-center flex-nowrap justify-center gap-40">
+      <div className="h-[90vh] flex items-center flex-col relative justify-center">
+        <div
+          className="flex items-center flex-nowrap justify-center gap-80"
+          style={{ color: slot.value?.textColor }}
+        >
           {Array.from({ length: value.length }).map((_, index) => (
             <SlotCounter
               key={index}
@@ -209,7 +221,7 @@ const LotteryModal = () => {
                 durationAnimationSec * (index + 1 + (index === value.length - 1 ? LAST_DELAY : 0))
               }
               charClassName={cn(
-                "text-7xl scale-[3] border border-solid rounded-md border-gray-200 select-none",
+                "text-7xl scale-[5] border border-solid rounded-md border-gray-700 select-none bg-white text-inherit",
                 {
                   "[&>span]:!ease-out": index !== value.length - 1,
                   "[&>span]:!ease-lottery": index === value.length - 1,

@@ -66,6 +66,7 @@ const generateDefaultSlot = (options: { prizeName?: string; slotName?: string } 
     prizes: defaultPrize,
     history: {},
     password: MD5("123").toString(),
+    textColor: "#000",
   };
 
   return { ...createDefaultSlot(), ...defaultSlot };
