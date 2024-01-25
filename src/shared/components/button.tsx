@@ -3,7 +3,10 @@ import { ArrowLeftIcon, RotateCwIcon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { queryClient } from "~/config/query-client";
+import { useConfig } from "~/store/config";
 import { cn } from "~/util";
+import { SEARCH_PARAMS } from "../constants/search-param";
+import useSearchParam from "../hooks/use-search-param";
 
 const Button = {
   Slot(props: AntButtonProps) {
@@ -24,6 +27,17 @@ const Button = {
   },
   Back() {
     const navigate = useNavigate();
+    const [, , slotParam] = useSearchParam(SEARCH_PARAMS.SLOT);
+
+    const { slot } = useConfig((state) => {
+      const slot = state.getSlot(slotParam);
+
+      return {
+        slot: {
+          value: slot,
+        },
+      };
+    });
 
     return (
       <Tooltip title="Back">
@@ -31,6 +45,7 @@ const Button = {
           icon={<ArrowLeftIcon />}
           className="fixed top-2 left-2"
           onClick={() => navigate(-1)}
+          style={{ color: slot.value?.textColor2 }}
         />
       </Tooltip>
     );

@@ -40,15 +40,25 @@ export default function LotteryPage() {
       )}
 
       <div className="flex flex-col gap-5 h-screen overflow-hidden justify-center items-center">
-        <Typography.Title level={1}>{slot.value?.name}</Typography.Title>
-        <Descriptions bordered layout="horizontal" className="min-w-[500px]">
+        <Typography.Title level={1} style={{ color: slot.value?.textColor }}>
+          {slot.value?.name}
+        </Typography.Title>
+        <Descriptions
+          bordered
+          layout="horizontal"
+          className="min-w-[500px] [&_.ant-descriptions-view]:!border-[rgba(0,0,0,0.2)] [&_.ant-descriptions-item-label]:!border-e-[rgba(0,0,0,0.2)]"
+        >
           {prize.value.map((_prize) => (
             <Descriptions.Item
               key={_prize._id}
               span={10}
               label={
                 <div className="flex flex-col items-start gap-1">
-                  <Typography.Title level={5} className="!mb-0 truncate min-w-[100px] !font-light">
+                  <Typography.Title
+                    level={5}
+                    className="!mb-0 truncate min-w-[100px] !font-light"
+                    style={{ color: slot.value?.textColor2 }}
+                  >
                     {_prize.name}
                   </Typography.Title>
                   <Typography.Title
@@ -250,6 +260,7 @@ const LotteryModal = () => {
           <Button.Icon
             icon={<XIcon className="h-6 w-6" />}
             className="z-50 absolute top-5 right-5"
+            style={{ color: slot.value?.textColor2 }}
             onClick={handleClose}
           />
         </Tooltip>

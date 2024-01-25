@@ -159,6 +159,15 @@ export default function ConfigPage() {
             className="w-fit"
           />
         </label>
+       
+        <label>
+          <Typography>Text Color 2</Typography>
+          <Input
+            defaultValue={slot.value?.textColor2}
+            onChange={debounce((e) => slot.set("textColor2", e.target.value), 1000)}
+            className="w-fit"
+          />
+        </label>
       </div>
 
       <div className="flex flex-wrap gap-5 mt-2">
